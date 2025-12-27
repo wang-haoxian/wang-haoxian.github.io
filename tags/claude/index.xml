@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Claude on Haoxian's Blog</title><link>https://www.haoxian.icu/tags/claude/</link><description>Recent content in Claude on Haoxian's Blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Sat, 27 Dec 2025 13:00:06 +0900</lastBuildDate><atom:link href="https://www.haoxian.icu/tags/claude/index.xml" rel="self" type="application/rss+xml"/><item><title>[LLM] Vibe Coding on the go with your phone</title><link>https://www.haoxian.icu/p/llm-vibe-coding-on-the-go-with-your-phone/</link><pubDate>Sat, 27 Dec 2025 13:00:06 +0900</pubDate><guid>https://www.haoxian.icu/p/llm-vibe-coding-on-the-go-with-your-phone/</guid><description>&lt;h2 id="an-inevitable-trend-and-parenting-life"&gt;An inevitable trend and parenting life
+&lt;/h2&gt;&lt;p&gt;As the rise of LLM and its application on coding field, more and more developers are trying to code with the help of AI. The most used are Anthropic&amp;rsquo;s Claude and Cursor, or similar tools. Some companies, for propaganda purpose, even claim that they are replace developers with AI. Despite the exaggeration, it&amp;rsquo;s really time to test them and embrace them to boost our productivity. Just yesterday, Mr. Karapathy tweeted about his own frustruation on catching up with the LLM trend, &lt;a class="link" href="https://x.com/karpathy/status/2004607146781278521" target="_blank" rel="noopener"
+&gt;The original tweet&lt;/a&gt;. For us developers, it&amp;rsquo;s really a must to adapt to the new way of coding. Learning by using them it the best way. &lt;br&gt;
+Meanwhile, with the kids, I cannot spend too much time on the computer. I need to find a way to vibe code on my phone, anywhere, anytime (waiting for the kids, on the bus, on the train, etc). So I started to explore how to make it possible.&lt;/p&gt;
+&lt;h2 id="my-experience-on-vibe-coding"&gt;My experience on vibe coding
+&lt;/h2&gt;&lt;p&gt;In my work, I have subscription of &lt;a class="link" href="https://cursor.so/" target="_blank" rel="noopener"
+&gt;Cursor&lt;/a&gt;. I personnally subscribed to &lt;a class="link" href="https://github.com/features/copilot" target="_blank" rel="noopener"
+&gt;Github Copilot&lt;/a&gt; for a long time and tested both on VSCode and CLI. I also tested &lt;a class="link" href="https://cloud.google.com/gemini/docs/codeassist/gemini-cli" target="_blank" rel="noopener"
+&gt;Gemini-cli&lt;/a&gt;, and breifly used &lt;a class="link" href="https://www.claude.com/product/claude-code" target="_blank" rel="noopener"
+&gt;Claude Code&lt;/a&gt;.&lt;br&gt;
+Recently, Github proposed their &lt;a class="link" href="https://docs.github.com/en/copilot/concepts/agents/coding-agent/about-coding-agent" target="_blank" rel="noopener"
+&gt;Copilot Agent&lt;/a&gt; which is to use LLM agent to write code and work on Github. All you need is to tell it what you want in the repo and it will create a PR with the code to be reviewed by you. It&amp;rsquo;s really impressive. However I didn&amp;rsquo;t really enjoy it because I can&amp;rsquo;t deploy it to test without subscribe to &lt;a class="link" href="https://github.com/features/spark" target="_blank" rel="noopener"
+&gt;Github Spark&lt;/a&gt;. Fine, I have to make my own vibe code environment.&lt;br&gt;
+OpenAI made their effort to catch up with the trend. The recent released &lt;a class="link" href="https://developers.openai.com/codex/cli/" target="_blank" rel="noopener"
+&gt;Codex-CLI&lt;/a&gt; got hyped and I found GPT-5 Codex to GPT-5.2 Codex are very promising models. I tested and I can&amp;rsquo;t be more satisfied. It&amp;rsquo;s really a nice tool to make relatively good quality code. After several days of test, I decided to make it available everywhere, especially on my iPhone. I started to explore how to integrate it into my mobile workflow.&lt;br&gt;
+&lt;img src="vibe_coding_setup.jpg" width="300"&gt;&lt;/p&gt;
+&lt;h2 id="vibe-code-on-iphone-with-codex-cli"&gt;Vibe code on iPhone with Codex-CLI
+&lt;/h2&gt;&lt;p&gt;The main idea is to use ssh to connect to a remote machine where Codex-CLI is installed. Then use a terminal app on iPhone to connect to it and vibe code everywhere. Simple as that. In reality, I want more than just typing and make it spit the code. I want to run the code and test the application. So a full development environment is needed. This is the workflow I came up with:
+&lt;img src="https://www.haoxian.icu/p/llm-vibe-coding-on-the-go-with-your-phone/vibe_coding_flow.png"
+width="803"
+height="440"
+srcset="https://www.haoxian.icu/p/llm-vibe-coding-on-the-go-with-your-phone/vibe_coding_flow_hu_138591f487c8bc57.png 480w, https://www.haoxian.icu/p/llm-vibe-coding-on-the-go-with-your-phone/vibe_coding_flow_hu_3e734d6765176d72.png 1024w"
+loading="lazy"
+alt="vibe_coding_workflow.png"
+class="gallery-image"
+data-flex-grow="182"
+data-flex-basis="438px"
+&gt;&lt;/p&gt;
+&lt;h3 id="step-1-prepare-a-remote-machine"&gt;Step 1: Prepare a remote machine
+&lt;/h3&gt;&lt;p&gt;It could be any machine that you can ssh into. It could be a cloud VM, a home server, your laptop with no sleep configuration or even an old Android phone with Termux installed. The only requirement is that it should have Codex-CLI installed and configured for ssh access.
+I just happened to have a bunch of Promox Machine lying around. I have cloud-init based VM templates ready to go. So I just created a new Ubuntu VM. With basic Python, NodeJS and Docker installed, it&amp;rsquo;s ready for development.&lt;br&gt;
+The additional step is to install Codex-CLI. You will need tmux or screen to keep the session alive when you disconnect from ssh.&lt;br&gt;
+Alternatively, Docker is very good choice. Afterall, it&amp;rsquo;s strongly advised to isolate Codex-CLI from the host system. You can easily find tragedies on X or reddit that LLM Cli tools mess up someone&amp;rsquo;s system environment or even delete important data. For example: &lt;a class="link" href="https://www.reddit.com/r/GeminiAI/comments/1md2quz/warning_gemini_cli_deleted_my_entire_windows/" target="_blank" rel="noopener"
+&gt;⚠️ Warning: Gemini CLI Deleted My Entire Windows System&lt;/a&gt;. If you are bold enough, Codex-CLI or other LLM CLI toosl implemented much stronger sandboxing mechanism to avoid such tragedies. But who wants the hassle of recovering a messed up system?&lt;/p&gt;
+&lt;h3 id="step-2-prepare-iphone-terminal-app"&gt;Step 2: Prepare iPhone terminal app
+&lt;/h3&gt;&lt;p&gt;There are several terminal apps on iOS that support ssh, or something else if you are on Android. I personnally use &lt;a class="link" href="https://apps.apple.com/us/app/neoserver-ssh-client-terminal/id6448362669" target="_blank" rel="noopener"
+&gt;NeoServer: SSH Client|Terminal&lt;/a&gt; because I know the developper and I can get support from him. Other apps like &lt;a class="link" href="https://termius.com/" target="_blank" rel="noopener"
+&gt;Termius&lt;/a&gt; are also good choices. They are nothing more than the entrypoint for your workflow. Just install one of them and configure the ssh connection to your remote machine.&lt;br&gt;
+The specialty of NeoServer is that it supports launch or attach to a tmux session directly when connecting to the remote machine. This is very useful because you can keep your coding session alive even when you disconnect from ssh and with one click to go back to the workspace. At the same time, it has a special tmux-optimized command mode to make it easier to use tmux on iPhone.
+&lt;img src="neoserver_tmux_mode.jpg" width="300"&gt;&lt;/p&gt;
+&lt;h3 id="step-3-prepare-your-coding-environment"&gt;Step 3: prepare your coding environment
+&lt;/h3&gt;&lt;p&gt;The ubuntu VM is ready to use for most of the coding tasks, you just need to run &lt;code&gt;npm i -g @openai/codex&lt;/code&gt; for Codex-CLI installation. Then run &lt;code&gt;codex auth login&lt;/code&gt; to login to your OpenAI account and authorize Codex-CLI.
+Codex&amp;rsquo;s auth is kind of PITA, you need to ssh to your remote machine and use&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;ssh -N -L 127.0.0.1:1455:127.0.0.1:1455 user@remote_machine
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;to forward the port for Codex-CLI to auth. Luckily it&amp;rsquo;s oneshot, you just need to do it once. After that, you can use Codex-CLI normally. Checkout this issue for more details: &lt;a class="link" href="https://github.com/openai/codex/issues/2798" target="_blank" rel="noopener"
+&gt;Support remote / headless OAuth sign-in #2798&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;I personally use linuxbrew to manage my packages. It&amp;rsquo;s very convenient to install different versions of NodeJS, Python, etc. You can also use nvm, pyenv or other version managers. Just make sure you have the right environment for your coding tasks.&lt;/p&gt;
+&lt;p&gt;Additionally, I suggest to get docker ready so that you can test your code in isolated containers in a detached manner with docker-compose. Since the Github Spark is paid only, this alternative is very useful to test web apps or other services while vibe coding.&lt;/p&gt;
+&lt;h3 id="step-4-setup-codex-cli"&gt;Step 4: Setup Codex-CLI
+&lt;/h3&gt;&lt;p&gt;Before using Codex-CLI, you need to setup your coding preferences. You can create a config file at &lt;code&gt;~/.codex/config.toml&lt;/code&gt;. I would like to share how I euip it.
+Firstly, it&amp;rsquo;s useful to allow codex to search for issues/docs on the web.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;span class="lnt"&gt;4
+&lt;/span&gt;&lt;span class="lnt"&gt;5
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-toml" data-lang="toml"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nx"&gt;sandbox_workspace_write&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="nx"&gt;network_access&lt;/span&gt; &lt;span class="p"&gt;=&lt;/span&gt; &lt;span class="kc"&gt;true&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nx"&gt;features&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="nx"&gt;web_search_request&lt;/span&gt; &lt;span class="p"&gt;=&lt;/span&gt; &lt;span class="kc"&gt;true&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;You can find more options of security here &lt;a class="link" href="https://developers.openai.com/codex/security/" target="_blank" rel="noopener"
+&gt;Docs for security&lt;/a&gt;. I didn&amp;rsquo;t touch too much to keep a balance between security and usability.&lt;/p&gt;
+&lt;p&gt;MCPs are very useful these days, but we don&amp;rsquo;t need too many of them. I just enable the most useful ones for me. &lt;a class="link" href="https://developers.openai.com/codex/mcp/" target="_blank" rel="noopener"
+&gt;Install MCPs for Codex CLI&lt;/a&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;span class="lnt"&gt;4
+&lt;/span&gt;&lt;span class="lnt"&gt;5
+&lt;/span&gt;&lt;span class="lnt"&gt;6
+&lt;/span&gt;&lt;span class="lnt"&gt;7
+&lt;/span&gt;&lt;span class="lnt"&gt;8
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-toml" data-lang="toml"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nx"&gt;mcp_servers&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;chrome-devtools&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="nx"&gt;command&lt;/span&gt; &lt;span class="p"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;#34;npx&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="nx"&gt;args&lt;/span&gt; &lt;span class="p"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s2"&gt;&amp;#34;chrome-devtools-mcp@latest&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s2"&gt;&amp;#34;--headless=true&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s2"&gt;&amp;#34;--isolated&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="nx"&gt;enabled&lt;/span&gt; &lt;span class="p"&gt;=&lt;/span&gt; &lt;span class="kc"&gt;true&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nx"&gt;mcp_servers&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;context7&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="nx"&gt;command&lt;/span&gt; &lt;span class="p"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;#34;npx&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="nx"&gt;args&lt;/span&gt; &lt;span class="p"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s2"&gt;&amp;#34;-y&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s2"&gt;&amp;#34;@upstash/context7-mcp&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;Where &lt;code&gt;chrome-devtools&lt;/code&gt; is very useful for web development especially for smoke testing the web apps, and &lt;code&gt;context7&lt;/code&gt; is a general purpose MCP that can access docs for libraries. You can add more MCPs as you need. Just make sure to read their documentation for proper configuration.&lt;/p&gt;
+&lt;h3 id="step-5-get-yourself-notified-when-agent-run-is-done"&gt;Step 5: get yourself notified when Agent Run is done
+&lt;/h3&gt;&lt;p&gt;When you are vibe coding, you may not want to stare at the terminal waiting for Codex-CLI to finish the task. If you are on desktop, the terminal can fire notification when the task is done. On iPhone, it&amp;rsquo;s not that easy. I personnally use &lt;a class="link" href="https://ntfy.sh/" target="_blank" rel="noopener"
+&gt;ntfy&lt;/a&gt; service to send notification to my phone and it works with simple topic subscription. Just add this to your &lt;code&gt;~/.codex/config.toml&lt;/code&gt; file:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;span class="lnt"&gt;4
+&lt;/span&gt;&lt;span class="lnt"&gt;5
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-toml" data-lang="toml"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="nx"&gt;notify&lt;/span&gt; &lt;span class="p"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="s2"&gt;&amp;#34;sh&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="s2"&gt;&amp;#34;-c&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="s2"&gt;&amp;#34;curl -s -o /dev/null -d \&amp;#34;Agent Turn Finished - $(date +&amp;#39;%H:%M&amp;#39;)\&amp;#34; https://ntfy.sh/{your_topic}&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;Now when you run an Agent task, you will get notified on your phone when it&amp;rsquo;s done. Very convenient for vibe coding on the go. This command suppresses the curl output to avoid cluttering the terminal but simply tell you that it&amp;rsquo;s your turn.&lt;/p&gt;
+&lt;h3 id="step-6-start-vibe-coding"&gt;Step 6: Start vibe coding
+&lt;/h3&gt;&lt;p&gt;When everything is ready, you can start vibe coding on your iPhone. Just ssh into your remote machine with the terminal app, attach to your tmux session and start Codex-CLI. Don&amp;rsquo;t forget to setup your Agents.md file for your project. You can frame the behavior of the agent with proper instructions. For example, you can tell the agent to write code, test code, dockerize the app, etc. Just like you are working on your desktop machine.&lt;br&gt;
+You may also ask the agent to create Github Actions CI/CD workflows for your project. It&amp;rsquo;s very useful to automate your deployment tasks. Just tell the agent what you want and it will create the necessary files for you. With this, you can even leverage the Github Actions to build your docker images and deploy them to your server automatically as long as you have proper secrets setup in your repo.&lt;/p&gt;
+&lt;h3 id="extra-step-access-the-development-server-from-your-iphone"&gt;Extra step: Access the development server from your iPhone
+&lt;/h3&gt;&lt;p&gt;Not every family network gets public IP address. If you want to access your development server from outside, you may need to setup tailscale or Zerotier on your remote machine and iPhone. This way, you can access your development server securely from anywhere. Checkout &lt;a class="link" href="https://tailscale.com/" target="_blank" rel="noopener"
+&gt;Tailscale&lt;/a&gt; or &lt;a class="link" href="https://www.zerotier.com/" target="_blank" rel="noopener"
+&gt;Zerotier&lt;/a&gt; for more details.&lt;/p&gt;
+&lt;h2 id="ui-design"&gt;UI design
+&lt;/h2&gt;&lt;p&gt;Although vibe coding on terminal is good enough, sometimes a better UI is needed. The Codex-CLI suggested figma MCP but as a Muggle in design, I am not comfortable to use it. But Google just released Stitch+(&lt;a class="link" href="https://stitch.withgoogle.com/" target="_blank" rel="noopener"
+&gt;https://stitch.withgoogle.com/&lt;/a&gt;) which is a AI assisted UI design tool. Or simply ask Gemini with screen captures to get better UI design. It&amp;rsquo;s well known that Gemini3 has strong capability in UI/UX design. You can leverage it to help you design better UI for your apps. Or you can run Gemini-cli to help you design UI components. Don&amp;rsquo;t hesitate to leverage different models for different tasks. Some even use one CLI to manage multiple CLIs to get the best of each model, but I haven&amp;rsquo;t tried that yet.&lt;/p&gt;
+&lt;h2 id="wrap-up"&gt;Wrap up
+&lt;/h2&gt;&lt;p&gt;I used this method for 1 month, and I am quite satisfied with the experience. I successfully made a complex stack with several Vue.js frontends, FastAPI services and PostgreSQL(in docker for dev environment for sure, since no one should use a simple DB inside docker for production). The whole stack is dockerized and can be deployed with docker-compose. It comes with tests and CI/CD workflows to automate the deployment with the capability to smoke test the web apps with chrome-devtools MCP.
+I didn&amp;rsquo;t squeeze every drop of productivity from vibe coding yet, but it&amp;rsquo;s already a great help for my coding tasks while taking care of my kids. And I find that the current workflow took already all my spare energy even though it&amp;rsquo;s not perfect yet.&lt;/p&gt;</description></item></channel></rss>

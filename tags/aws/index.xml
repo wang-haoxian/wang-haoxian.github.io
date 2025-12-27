@@ -1,0 +1,427 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>AWS on Haoxian's Blog</title><link>https://www.haoxian.icu/tags/aws/</link><description>Recent content in AWS on Haoxian's Blog</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Thu, 01 Feb 2024 11:00:06 +0900</lastBuildDate><atom:link href="https://www.haoxian.icu/tags/aws/index.xml" rel="self" type="application/rss+xml"/><item><title>[MLOps] Deployment of Whisper on AWS Fargate using Terraform</title><link>https://www.haoxian.icu/p/mlops-deployment-of-whisper-on-aws-fargate-using-terraform/</link><pubDate>Thu, 01 Feb 2024 11:00:06 +0900</pubDate><guid>https://www.haoxian.icu/p/mlops-deployment-of-whisper-on-aws-fargate-using-terraform/</guid><description>&lt;h2 id="introduction"&gt;Introduction
+&lt;/h2&gt;&lt;p&gt;Whisper is a STT (Speech to Text) model developed by &lt;a class="link" href="https://openai.com/research/whisper" target="_blank" rel="noopener"
+&gt;OPENAI&lt;/a&gt;. It&amp;rsquo;s a powerful model that can convert human speech into text. Friend of mine encoutered this project as an job interview task with IaC using Terraform so I get the idea to do it on my own and I find it interesting to deploy it on AWS Fargate. I chose Fargate because of the highly optimized version of it doesn&amp;rsquo;t require GPUs. In this post, I will share my journey to this final solution and show you how to deploy it.&lt;br&gt;
+All the code is available on &lt;a class="link" href="https://github.com/wang-haoxian/whisper-terraform-aws-Fargate" target="_blank" rel="noopener"
+&gt;Github&lt;/a&gt; and you can use it to deploy the model on your own AWS account.&lt;/p&gt;
+&lt;h2 id="prerequisites"&gt;Prerequisites
+&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;AWS CLI configured&lt;/li&gt;
+&lt;li&gt;Terraform with Terraform Cloud (or local state if you prefer) configured&lt;/li&gt;
+&lt;li&gt;Docker installed&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;If you don&amp;rsquo;t have any experience on Terraform, you can use the official tutorial to get started: &lt;a class="link" href="https://learn.hashicorp.com/tutorials/terraform/install-cli?in=terraform/aws-get-started" target="_blank" rel="noopener"
+&gt;Getting Started with Terraform&lt;/a&gt; with AWS Provider.&lt;/p&gt;
+&lt;h2 id="interpretation-of-the-task"&gt;Interpretation of the task
+&lt;/h2&gt;&lt;p&gt;Due to the confidentiality of the task, I can&amp;rsquo;t share the original task. However, I can share the main points of the task. The task is to serve STT model to replace the previous outsourced service. The model is expected to serve 100 users in a call center for post-call analytics and we should expect X10 users in the future. &lt;br&gt;
+My understanding on this task is:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;This is not about the concurrency of the model. We don&amp;rsquo;t need real-time processing, so we can use batch processing.&lt;/li&gt;
+&lt;li&gt;The number of users is not a significant factor for the service, but the number of audios generated and the processing time for each document. (For example, we want to have the transcriptions of all our last weeks calls to have insights in the weekly meetings this monday, that means the time window to process all the files before monday, so for the files of Friday we will have to process them during the weekend, without taking consideration of the time that analytics team should take).&lt;/li&gt;
+&lt;li&gt;The model is not expected to be used by the public, so we don&amp;rsquo;t need to worry about the security of the model.(At least for this version, we can assume that we only use the model in a secure environment)&lt;/li&gt;
+&lt;li&gt;The cost should be minimized. As long as we can optimize the model to use the least resources, we can use the cheapest service instead of the most powerful one with GPUs.&lt;/li&gt;
+&lt;li&gt;The model should be scalable. We should be able to scale the model to serve more users in the future.&lt;/li&gt;
+&lt;li&gt;We can create S3 buckets to store the audio files and the results, but we don&amp;rsquo;t have to since the end user of the service(the analytics Team) may have already had a solution for this.&lt;/li&gt;
+&lt;li&gt;There are no limit on the choice of the model. We can use any model as long as it can serve the purpose. But we should be able to evaluate the model with some baseline metrics.(e.g. WER, CER, etc. But this is not the main point of the task)&lt;/li&gt;
+&lt;li&gt;The Diarisation is not mentionned but important in the multi-party communications like telephones, but that should be another project since we are talking about another ML module.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="reference-of-solutions-on-the-market"&gt;Reference of solutions on the market
+&lt;/h3&gt;&lt;p&gt;In France, I have encountered a few companies that provide STT services. I think it&amp;rsquo;s interesting to check out &lt;a class="link" href="https://www.allo-media.net/" target="_blank" rel="noopener"
+&gt;AlloMedia&lt;/a&gt;, a company that provides STT services for call centers. We can be inspired by their solutions.&lt;/p&gt;
+&lt;h2 id="investigation-on-whisper-and-its-deployment"&gt;Investigation on Whisper and its deployment
+&lt;/h2&gt;&lt;h3 id="frameworks-and-libraries"&gt;Frameworks and Libraries
+&lt;/h3&gt;&lt;p&gt;There are several possible frameworks to use Whisper model, mainly:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a class="link" href="https://github.com/openai/whisper" target="_blank" rel="noopener"
+&gt;OpenAI official&lt;/a&gt; The official OpenAI implementation&lt;/li&gt;
+&lt;li&gt;&lt;a class="link" href="https://github.com/ggerganov/whisper.cpp" target="_blank" rel="noopener"
+&gt;Whisper.CPP&lt;/a&gt; The C++ implementation of the model&lt;/li&gt;
+&lt;li&gt;&lt;a class="link" href="https://huggingface.co/openai/whisper-large-v3" target="_blank" rel="noopener"
+&gt;Transformers&lt;/a&gt; The Huggingface implementation of the model in its transformers library.&lt;/li&gt;
+&lt;li&gt;&lt;a class="link" href="https://github.com/systran/faster-whisper" target="_blank" rel="noopener"
+&gt;Faster Whisper&lt;/a&gt; which converts the model to &lt;a class="link" href="https://github.com/OpenNMT/CTranslate2" target="_blank" rel="noopener"
+&gt;CTranslate2&lt;/a&gt; format to optimize the model.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;There is a benchmark of these implementations on &lt;a class="link" href="https://github.com/SYSTRAN/faster-whisper/blob/master/README.md" target="_blank" rel="noopener"
+&gt;this page&lt;/a&gt; and I take some of the information here:&lt;/p&gt;
+&lt;h3 id="large-v2-model-on-gpu"&gt;Large-v2 model on GPU
+&lt;/h3&gt;&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Implementation&lt;/th&gt;
+&lt;th&gt;Precision&lt;/th&gt;
+&lt;th&gt;Beam size&lt;/th&gt;
+&lt;th&gt;Time&lt;/th&gt;
+&lt;th&gt;Max. GPU memory&lt;/th&gt;
+&lt;th&gt;Max. CPU memory&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;openai/whisper&lt;/td&gt;
+&lt;td&gt;fp16&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;4m30s&lt;/td&gt;
+&lt;td&gt;11325MB&lt;/td&gt;
+&lt;td&gt;9439MB&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;faster-whisper&lt;/td&gt;
+&lt;td&gt;fp16&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;54s&lt;/td&gt;
+&lt;td&gt;4755MB&lt;/td&gt;
+&lt;td&gt;3244MB&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;faster-whisper&lt;/td&gt;
+&lt;td&gt;int8&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;59s&lt;/td&gt;
+&lt;td&gt;3091MB&lt;/td&gt;
+&lt;td&gt;3117MB&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;&lt;em&gt;Executed with CUDA 11.7.1 on a NVIDIA Tesla V100S.&lt;/em&gt;&lt;/p&gt;
+&lt;h3 id="small-model-on-cpu"&gt;Small model on CPU
+&lt;/h3&gt;&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Implementation&lt;/th&gt;
+&lt;th&gt;Precision&lt;/th&gt;
+&lt;th&gt;Beam size&lt;/th&gt;
+&lt;th&gt;Time&lt;/th&gt;
+&lt;th&gt;Max. memory&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;openai/whisper&lt;/td&gt;
+&lt;td&gt;fp32&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;10m31s&lt;/td&gt;
+&lt;td&gt;3101MB&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;whisper.cpp&lt;/td&gt;
+&lt;td&gt;fp32&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;17m42s&lt;/td&gt;
+&lt;td&gt;1581MB&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;whisper.cpp&lt;/td&gt;
+&lt;td&gt;fp16&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;12m39s&lt;/td&gt;
+&lt;td&gt;873MB&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;faster-whisper&lt;/td&gt;
+&lt;td&gt;fp32&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;2m44s&lt;/td&gt;
+&lt;td&gt;1675MB&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;faster-whisper&lt;/td&gt;
+&lt;td&gt;int8&lt;/td&gt;
+&lt;td&gt;5&lt;/td&gt;
+&lt;td&gt;2m04s&lt;/td&gt;
+&lt;td&gt;995MB&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;&lt;em&gt;Executed with 8 threads on a Intel(R) Xeon(R) Gold 6226R.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;As we can see, the faster-whisper implementation is the most optimized one. It&amp;rsquo;s interesting to use this implementation for our deployment.&lt;/p&gt;
+&lt;p&gt;This is why I chose to use CPU and Fargate. After some tests, I found that the base model is very optimized and can be used on CPU and we can get the result in a reasonable time without the cost of quality.&lt;/p&gt;
+&lt;p&gt;The code to serve the model is very simple, we can use the following code to serve the model:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt; 1
+&lt;/span&gt;&lt;span class="lnt"&gt; 2
+&lt;/span&gt;&lt;span class="lnt"&gt; 3
+&lt;/span&gt;&lt;span class="lnt"&gt; 4
+&lt;/span&gt;&lt;span class="lnt"&gt; 5
+&lt;/span&gt;&lt;span class="lnt"&gt; 6
+&lt;/span&gt;&lt;span class="lnt"&gt; 7
+&lt;/span&gt;&lt;span class="lnt"&gt; 8
+&lt;/span&gt;&lt;span class="lnt"&gt; 9
+&lt;/span&gt;&lt;span class="lnt"&gt;10
+&lt;/span&gt;&lt;span class="lnt"&gt;11
+&lt;/span&gt;&lt;span class="lnt"&gt;12
+&lt;/span&gt;&lt;span class="lnt"&gt;13
+&lt;/span&gt;&lt;span class="lnt"&gt;14
+&lt;/span&gt;&lt;span class="lnt"&gt;15
+&lt;/span&gt;&lt;span class="lnt"&gt;16
+&lt;/span&gt;&lt;span class="lnt"&gt;17
+&lt;/span&gt;&lt;span class="lnt"&gt;18
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-python" data-lang="python"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;faster_whisper&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;WhisperModel&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="n"&gt;model_size&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;#34;large-v3&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="c1"&gt;# Run on GPU with FP16&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="n"&gt;model&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;WhisperModel&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;model_size&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;device&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;#34;cuda&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;compute_type&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;#34;float16&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="c1"&gt;# or run on GPU with INT8&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="c1"&gt;# model = WhisperModel(model_size, device=&amp;#34;cuda&amp;#34;, compute_type=&amp;#34;int8_float16&amp;#34;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="c1"&gt;# or run on CPU with INT8&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="c1"&gt;# model = WhisperModel(model_size, device=&amp;#34;cpu&amp;#34;, compute_type=&amp;#34;int8&amp;#34;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="n"&gt;segments&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;info&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;model&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;transcribe&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;#34;audio.mp3&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;beam_size&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;5&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="nb"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;#34;Detected language &amp;#39;&lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s2"&gt;&amp;#39; with probability &lt;/span&gt;&lt;span class="si"&gt;%f&lt;/span&gt;&lt;span class="s2"&gt;&amp;#34;&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;info&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;language&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;info&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;language_probability&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;segment&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;segments&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="nb"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;#34;[&lt;/span&gt;&lt;span class="si"&gt;%.2f&lt;/span&gt;&lt;span class="s2"&gt;s -&amp;gt; &lt;/span&gt;&lt;span class="si"&gt;%.2f&lt;/span&gt;&lt;span class="s2"&gt;s] &lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s2"&gt;&amp;#34;&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;segment&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;start&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;segment&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;end&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;segment&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;text&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;As you can see, the code is very simple and we can use it to serve the model.&lt;/p&gt;
+&lt;h3 id="possible-solutions-on-aws"&gt;Possible Solutions on AWS
+&lt;/h3&gt;&lt;p&gt;There are several possible way to deploy the model on AWS, mainly:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;EC2: We can deploy the model on EC2 and use the autoscaling group to scale the model.&lt;/li&gt;
+&lt;li&gt;Lambda: We can deploy the model on Lambda and use the API Gateway to serve the model.&lt;/li&gt;
+&lt;li&gt;Fargate: We can deploy the model on Fargate and use the ECS to serve the model.&lt;/li&gt;
+&lt;li&gt;SageMaker: We can deploy the model on SageMaker and use the endpoint to serve the model.&lt;/li&gt;
+&lt;li&gt;EKS: We can deploy the model on EKS and use the Kubernetes to serve the model.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;I chose to use Fargate because it&amp;rsquo;s the most optimized solution for our case. We don&amp;rsquo;t need GPUs and we don&amp;rsquo;t need to worry about the infrastructure. We can use the Fargate to serve the model and we can use the ECS to scale the model.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s still checkout the pros and cons of each solution:&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Solution&lt;/th&gt;
+&lt;th&gt;Pros&lt;/th&gt;
+&lt;th&gt;Cons&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;EC2&lt;/td&gt;
+&lt;td&gt;Full control of the infrastructure&lt;/td&gt;
+&lt;td&gt;Need to manage the infrastructure and expensive when using GPU&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Lambda&lt;/td&gt;
+&lt;td&gt;Serverless&lt;/td&gt;
+&lt;td&gt;Limited to 15 minutes and no GPU&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Fargate&lt;/td&gt;
+&lt;td&gt;Serverless&lt;/td&gt;
+&lt;td&gt;No GPU&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;SageMaker&lt;/td&gt;
+&lt;td&gt;Managed service&lt;/td&gt;
+&lt;td&gt;Expensive&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;EKS&lt;/td&gt;
+&lt;td&gt;Full control of the infrastructure&lt;/td&gt;
+&lt;td&gt;Need to manage the infrastructure&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h2 id="overview-of-the-solution"&gt;Overview of the solution
+&lt;/h2&gt;&lt;p&gt;I draw the pipeline of the deployment as follows:
+&lt;img src="https://www.haoxian.icu/p/mlops-deployment-of-whisper-on-aws-fargate-using-terraform/whisper-arch-base.png"
+width="2243"
+height="1549"
+srcset="https://www.haoxian.icu/p/mlops-deployment-of-whisper-on-aws-fargate-using-terraform/whisper-arch-base_hu_fcb5d54f06878abc.png 480w, https://www.haoxian.icu/p/mlops-deployment-of-whisper-on-aws-fargate-using-terraform/whisper-arch-base_hu_a01300e56a2cc122.png 1024w"
+loading="lazy"
+alt="The illustrated pipeline"
+class="gallery-image"
+data-flex-grow="144"
+data-flex-basis="347px"
+&gt;&lt;/p&gt;
+&lt;p&gt;We can expect three parts in the deployment:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Codes
+&lt;ul&gt;
+&lt;li&gt;The Python code for model serving code: The code to serve the model.&lt;/li&gt;
+&lt;li&gt;The Terraform code for infrastructure: The code to deploy the infrastructure.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;The infrastructure part: The infrastructure of code and CI/CD pipeline. This part is rather static and normally in the organization, it&amp;rsquo;s managed by the DevOps team or the Infra team. And it&amp;rsquo;s not the main part of the task and not necessary to be done with AWS. It can be Github Actions, Gitlab CI, Jenkins, etc.&lt;/li&gt;
+&lt;li&gt;The model serving part: The model is served by the Fargate and the ECS. We can use the ECS to scale the model.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="python-implementation"&gt;Python Implementation
+&lt;/h2&gt;&lt;h3 id="development-details"&gt;Development details
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Python Project management: Poetry&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Model Framework: CTranslate2 for faster-whisper&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Model size: Base&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;API Framework: FastAPI with Swagger UI and OpenAPI support&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Model is downloaded when the web server is loaded (Not the best practice)&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;An endpoint &lt;code&gt;/transcribe&lt;/code&gt; for transcription&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;A health check &lt;code&gt;/healthz&lt;/code&gt; is exposed for healthcheck ( for the sake of time, no model status check is implemented in this version) it’s just a hook to see if the server responds&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;A dockerfile with docker-compose is created for building the image. And to launch it easily without typing long commands for dev purpose.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;The docker compose file has limited CPU and memory to help with resources provisioning&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;.gitignore and .dockerignore are added for not including unwanted files in docker building process or in git.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;The repo coexists with terraform codes, in reality they should be either separated or as submodules.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Formatting and linting:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Black&lt;/li&gt;
+&lt;li&gt;Pylint&lt;/li&gt;
+&lt;li&gt;MyPy&lt;/li&gt;
+&lt;li&gt;isort&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Pydantic is used to make schemes for the API&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;A makefile is created for handy commands for testing&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="terraform-implementation"&gt;Terraform Implementation
+&lt;/h2&gt;&lt;p&gt;I have no previous experience on terraform except several runs with the official tutorials. I learnt during the project. To begin with, I took
+&lt;a class="link" href="https://github.com/kayvane1/terraform-aws-huggingface-deploy/tree/master" target="_blank" rel="noopener"
+&gt;GitHub - kayvane1/terraform-aws-huggingface-deploy&lt;/a&gt;
+to get inspired. ChatGPT was used to help me understand quickly the syntax and make sample codes based on my needs, but mostly I use the official documentation.&lt;/p&gt;
+&lt;h3 id="terraform-cloud"&gt;Terraform cloud
+&lt;/h3&gt;&lt;p&gt;In this project I use terraform cloud all the time to simulate an env for collaboration as team (shared secrets, states, etc) It could be S3 backend or whatever backend supported by Terraform&lt;/p&gt;
+&lt;h3 id="development-details-1"&gt;Development details
+&lt;/h3&gt;&lt;h4 id="boostrap"&gt;Boostrap
+&lt;/h4&gt;&lt;p&gt;The project is modularized to four modules, instead of just a file.&lt;/p&gt;
+&lt;p&gt;I consider this part as basic infrastructure that is used around the whole infrastructure. It should be easily tested one by one.&lt;/p&gt;
+&lt;p&gt;there are four modules:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Code Commit&lt;/li&gt;
+&lt;li&gt;Code Build&lt;/li&gt;
+&lt;li&gt;ECR&lt;/li&gt;
+&lt;li&gt;IAM (to be put on corresponding modules instead of being an independent module)&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h4 id="app-deployment"&gt;App Deployment
+&lt;/h4&gt;&lt;p&gt;In contrary to the bootstrap part, I think this part is much more exclusive to the app. So I put every components in a single &lt;code&gt;ecs&lt;/code&gt; module with alb.tf, &lt;a class="link" href="http://main.tf" target="_blank" rel="noopener"
+&gt;main.tf&lt;/a&gt;, etc.&lt;/p&gt;
+&lt;h4 id="resources-estimation"&gt;Resources Estimation
+&lt;/h4&gt;&lt;p&gt;Based on the local runs, I begin with&lt;/p&gt;
+&lt;h5 id="take-1"&gt;Take 1
+&lt;/h5&gt;&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;2 CPUs + 4GB&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;In fact only 65 of 2 CPU and 11% of RAM was used&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://www.haoxian.icu/p/mlops-deployment-of-whisper-on-aws-fargate-using-terraform/take1.png"
+width="2074"
+height="702"
+srcset="https://www.haoxian.icu/p/mlops-deployment-of-whisper-on-aws-fargate-using-terraform/take1_hu_1e61f75ea7752e6b.png 480w, https://www.haoxian.icu/p/mlops-deployment-of-whisper-on-aws-fargate-using-terraform/take1_hu_c5ba67cd7ae18102.png 1024w"
+loading="lazy"
+alt="CPU and memory consumption of take1"
+class="gallery-image"
+data-flex-grow="295"
+data-flex-basis="709px"
+&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;So reduced to 1 CPU + 2GB but it’s not sufficient can caused the service to stop&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h5 id="take2"&gt;Take2
+&lt;/h5&gt;&lt;ul&gt;
+&lt;li&gt;1 CPU + 2GB&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src="https://www.haoxian.icu/p/mlops-deployment-of-whisper-on-aws-fargate-using-terraform/take2.png"
+width="2134"
+height="762"
+srcset="https://www.haoxian.icu/p/mlops-deployment-of-whisper-on-aws-fargate-using-terraform/take2_hu_b9cc39d32d5466c5.png 480w, https://www.haoxian.icu/p/mlops-deployment-of-whisper-on-aws-fargate-using-terraform/take2_hu_5da2a03c6d3f5373.png 1024w"
+loading="lazy"
+alt="CPU and memory consumption of take1"
+class="gallery-image"
+data-flex-grow="280"
+data-flex-basis="672px"
+&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;This cause the container to be killed often&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h5 id="final-choice"&gt;Final choice
+&lt;/h5&gt;&lt;ul&gt;
+&lt;li&gt;2 CPU + 4 GB of RAM should be ok but we need further stress test&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h5 id="alb-strategy"&gt;ALB strategy
+&lt;/h5&gt;&lt;p&gt;I use ALB&amp;rsquo;s target group for autoscaling the service. The desired number was set to 3 and be able to scale to 0. The minimum health percent of app was set to 50 to trigger the scale in.&lt;/p&gt;
+&lt;h2 id="thoughts-on-potential-improvements"&gt;Thoughts on potential improvements
+&lt;/h2&gt;&lt;h3 id="security"&gt;Security
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;https (even for internal communication - zero trust) + dedicated domain name (if exposed to the internet, if it’s called by enduser’s PC, not sure what the users look like) + with IP whitelist to improve security&lt;/li&gt;
+&lt;li&gt;dev/stage/prod env separation&lt;/li&gt;
+&lt;li&gt;Finer grain RBAC&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="scalability"&gt;Scalability
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;Automatic Target Weights (ATW) → weighted lb. Combine different strategies with metrics to make the scaling efficiently or Least outstanding requests&lt;/li&gt;
+&lt;li&gt;stress test&lt;/li&gt;
+&lt;li&gt;Over-Provisioning&lt;/li&gt;
+&lt;li&gt;Fine-Tune threshold for scaling based on metrics&lt;/li&gt;
+&lt;li&gt;Rate Limit in app&lt;/li&gt;
+&lt;li&gt;Queuing&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="efficiency"&gt;Efficiency
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;Improve configurability with more tf variables instead of hardcoded ones&lt;/li&gt;
+&lt;li&gt;Cache for Code Build&lt;/li&gt;
+&lt;li&gt;tag commit for code build and tag image (versioning of images), make two pipelines one for dev CI another for publish based on branch/tag system&lt;/li&gt;
+&lt;li&gt;region - I picked randomly&lt;/li&gt;
+&lt;li&gt;triggers
+&lt;ul&gt;
+&lt;li&gt;Fargate deploy refresh should be triggered in pipeline once the prod build is done&lt;/li&gt;
+&lt;li&gt;Code commit should trigger code pipeline automatically with push/merge to main&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;systematically use tags&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="functionality"&gt;Functionality
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;Is Terraform cloud the standard usage of Doctolib? Maybe just with S3 backend&lt;/li&gt;
+&lt;li&gt;better log/ monitoring&lt;/li&gt;
+&lt;li&gt;EFS for models&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="viability"&gt;Viability
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;health check container → the health check is oversimplified&lt;/li&gt;
+&lt;li&gt;The model is downloaded from HFhub which is an external service, and if it fails, the service fails. So the model file should be persistent to S3 or add to the image.&lt;/li&gt;
+&lt;li&gt;P-99 TM-99&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="housekeeping"&gt;Housekeeping
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;aws_ecr_lifecycle_policy for clean up old images that are not in use&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="cost-agnostic"&gt;Cost Agnostic
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;cost Optim&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="fallback"&gt;Fallback
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;Use AWS TTS as a fallback plan&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="in-the-end"&gt;In the end
+&lt;/h2&gt;&lt;p&gt;This is what I have done in this short-term project. I will continue to improve the project and I will be happy to hear your feedback.&lt;/p&gt;</description></item></channel></rss>

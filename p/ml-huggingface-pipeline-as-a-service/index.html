@@ -1,0 +1,416 @@
+<!doctype html><html lang=en-us dir=ltr><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><meta name=description content="Quick setup of Huggingface Pipeline as a Service Using Python Web Servers"><title>[ML] Huggingface Pipeline as a Service</title><link rel=canonical href=https://www.haoxian.icu/p/ml-huggingface-pipeline-as-a-service/><link rel=stylesheet href=/scss/style.min.833d6eed45de56f48306bf57268d5b8cdfc8a60e8e7bdc99810464fcd033f7c6.css><meta property='og:title' content="[ML] Huggingface Pipeline as a Service"><meta property='og:description' content="Quick setup of Huggingface Pipeline as a Service Using Python Web Servers"><meta property='og:url' content='https://www.haoxian.icu/p/ml-huggingface-pipeline-as-a-service/'><meta property='og:site_name' content="Haoxian's Blog"><meta property='og:type' content='article'><meta property='article:section' content='Post'><meta property='article:tag' content='Transformers'><meta property='article:tag' content='Huggingface'><meta property='article:tag' content='NLP'><meta property='article:tag' content='ML'><meta property='article:tag' content='Python'><meta property='article:tag' content='Web Server'><meta property='article:tag' content='Starlette'><meta property='article:tag' content='FastAPI'><meta property='article:tag' content='PyTorch'><meta property='article:tag' content='MLOps'><meta property='article:published_time' content='2023-04-15T12:00:06+09:00'><meta property='article:modified_time' content='2023-04-15T12:00:06+09:00'><meta name=twitter:title content="[ML] Huggingface Pipeline as a Service"><meta name=twitter:description content="Quick setup of Huggingface Pipeline as a Service Using Python Web Servers"><link rel="shortcut icon" href=/favicon.svg></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label="Toggle Menu">
+<span class=hamburger-box><span class=hamburger-inner></span></span></button><header><figure class=site-avatar><a href=/><img src=/img/avatar_hu_a8dd701257cc3205.jpg width=300 height=400 class=site-logo loading=lazy alt=Avatar></a></figure><div class=site-meta><h1 class=site-name><a href=/>Haoxian's Blog</a></h1><h2 class=site-description>From NLP to MLOps and LLM</h2></div></header><ol class=menu-social><li><a href=https://github.com/wang-haoxian target=_blank title=GitHub rel=me><svg class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6.0 00-1.3-3.2 4.2 4.2.0 00-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3.0 00-6.2.0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2.0 00-.1 3.2A4.6 4.6.0 004 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg></a></li></ol><ol class=menu id=main-menu><li><a href=/><svg class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="5 12 3 12 12 3 21 12 19 12"/><path d="M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/><path d="M9 21v-6a2 2 0 012-2h2a2 2 0 012 2v6"/></svg>
+<span>Home</span></a></li><li><a href=/archives/><svg class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><rect x="3" y="4" width="18" height="4" rx="2"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+<span>Archives</span></a></li><li><a href=/search/><svg class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>
+<span>Search</span></a></li><li><a href=/links/><svg class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M10 14a3.5 3.5.0 005 0l4-4a3.5 3.5.0 00-5-5l-.5.5"/><path d="M14 10a3.5 3.5.0 00-5 0l-4 4a3.5 3.5.0 005 5l.5-.5"/></svg>
+<span>Links</span></a></li><li class=menu-bottom-section><ol class=menu><li id=dark-mode-toggle><svg class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="8" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
+<svg class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="16" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
+<span>Dark Mode</span></li></ol></li></ol></aside><aside class="sidebar right-sidebar sticky"><section class="widget archives"><div class=widget-icon><svg class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg></div><h2 class="widget-title section-title">Table of contents</h2><div class=widget--toc><nav id=TableOfContents><ol><li><a href=#huggingface-pipeline-as-a-service>Huggingface Pipeline as a Service</a></li><li><a href=#quick-setup-with-huggingfaces-script-in-documentation>Quick Setup with Huggingface&rsquo;s script in documentation</a></li><li><a href=#use-fastapi-as-web-server>Use FastAPI as Web Server</a></li><li><a href=#dockerize-the-web-server>Dockerize the Web Server</a></li><li><a href=#conclusion--performance-test>Conclusion & Performance Test</a></li></ol></nav></div></section></aside><main class="main full-width"><article class=main-article><header class=article-header><div class=article-details><div class=article-title-wrapper><h2 class=article-title><a href=/p/ml-huggingface-pipeline-as-a-service/>[ML] Huggingface Pipeline as a Service</a></h2><h3 class=article-subtitle>Quick setup of Huggingface Pipeline as a Service Using Python Web Servers</h3></div><footer class=article-time><div><svg class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
+<time class=article-time--published datetime=2023-04-15T12:00:06+09:00>Apr 15, 2023</time></div><div><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<time class=article-time--reading>6 minute read</time></div></footer></div></header><section class=article-content><h2 id=huggingface-pipeline-as-a-service>Huggingface Pipeline as a Service</h2><p>I am currently working on some projects using Huggingface Transformers. I found it is a little bit tedious to set up a web server for each model. So I decided to write a script to automate the process.<br>There is a great documentation on Huggingface website about how to set up a web server for a model using Scarlette. Here is the link: <a class=link href=https://huggingface.co/docs/transformers/main/en/pipeline_webserver target=_blank rel=noopener>pipeline_webserver</a></p><h2 id=quick-setup-with-huggingfaces-script-in-documentation>Quick Setup with Huggingface&rsquo;s script in documentation</h2><p>Here is the code that I tweaked a little bit for my use case. You can find it in my github repo: <a class=link href=https://github.com/haoxian-lab/hf-serve target=_blank rel=noopener>hf_serve</a></p><p>For the devices, you can always use <code>cpu</code> or <code>cuda</code> for GPU.<br>And if you are working on Mac OS with Apple Silicon, you can use <code>mps</code> to accelerate the inference. More about PyTorch with MPS: <a class=link href=https://developer.apple.com/metal/pytorch/ target=_blank rel=noopener>PyTorch with MPS</a>. You will need to install the experimental version of PyTorch with MPS support.<br>With MPS, you can get a 2x to 3x speedup on inference.</p><p>In the repo, the default model used is <a class=link href=https://huggingface.co/cardiffnlp/tweet-topic-21-multi target=_blank rel=noopener>cardiffnlp/tweet-topic-21-multi</a> .<br>You can change it in the <code>hf_serve/config.py</code> file.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=line><span class=cl><span class=c1># hf_serve/serving_starlette.py</span>
+</span></span><span class=line><span class=cl><span class=kn>from</span> <span class=nn>starlette.applications</span> <span class=kn>import</span> <span class=n>Starlette</span>
+</span></span><span class=line><span class=cl><span class=kn>from</span> <span class=nn>starlette.responses</span> <span class=kn>import</span> <span class=n>JSONResponse</span>
+</span></span><span class=line><span class=cl><span class=kn>from</span> <span class=nn>starlette.routing</span> <span class=kn>import</span> <span class=n>Route</span>
+</span></span><span class=line><span class=cl><span class=kn>from</span> <span class=nn>transformers</span> <span class=kn>import</span> <span class=n>pipeline</span>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=nn>asyncio</span>
+</span></span><span class=line><span class=cl><span class=kn>from</span> <span class=nn>hf_serve.config</span> <span class=kn>import</span> <span class=n>DEVICE</span><span class=p>,</span> <span class=n>MODEL</span> 
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>async</span> <span class=k>def</span> <span class=nf>homepage</span><span class=p>(</span><span class=n>request</span><span class=p>):</span>
+</span></span><span class=line><span class=cl>    <span class=n>payload</span> <span class=o>=</span> <span class=k>await</span> <span class=n>request</span><span class=o>.</span><span class=n>body</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=n>string</span> <span class=o>=</span> <span class=n>payload</span><span class=o>.</span><span class=n>decode</span><span class=p>(</span><span class=s2>&#34;utf-8&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>response_q</span> <span class=o>=</span> <span class=n>asyncio</span><span class=o>.</span><span class=n>Queue</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=k>await</span> <span class=n>request</span><span class=o>.</span><span class=n>app</span><span class=o>.</span><span class=n>model_queue</span><span class=o>.</span><span class=n>put</span><span class=p>((</span><span class=n>string</span><span class=p>,</span> <span class=n>response_q</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>    <span class=n>output</span> <span class=o>=</span> <span class=k>await</span> <span class=n>response_q</span><span class=o>.</span><span class=n>get</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=n>JSONResponse</span><span class=p>(</span><span class=n>output</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>async</span> <span class=k>def</span> <span class=nf>server_loop</span><span class=p>(</span><span class=n>q</span><span class=p>):</span>
+</span></span><span class=line><span class=cl>    <span class=n>pipe</span> <span class=o>=</span> <span class=n>pipeline</span><span class=p>(</span><span class=n>model</span><span class=o>=</span><span class=n>MODEL</span><span class=p>,</span> <span class=n>top_k</span><span class=o>=</span><span class=kc>None</span><span class=p>,</span> <span class=n>device</span><span class=o>=</span><span class=n>DEVICE</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=k>while</span> <span class=kc>True</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>        <span class=p>(</span><span class=n>string</span><span class=p>,</span> <span class=n>response_q</span><span class=p>)</span> <span class=o>=</span> <span class=k>await</span> <span class=n>q</span><span class=o>.</span><span class=n>get</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>        <span class=n>out</span> <span class=o>=</span> <span class=n>pipe</span><span class=p>(</span><span class=n>string</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=k>await</span> <span class=n>response_q</span><span class=o>.</span><span class=n>put</span><span class=p>(</span><span class=n>out</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=n>app</span> <span class=o>=</span> <span class=n>Starlette</span><span class=p>(</span>
+</span></span><span class=line><span class=cl>    <span class=n>routes</span><span class=o>=</span><span class=p>[</span>
+</span></span><span class=line><span class=cl>        <span class=n>Route</span><span class=p>(</span><span class=s2>&#34;/&#34;</span><span class=p>,</span> <span class=n>homepage</span><span class=p>,</span> <span class=n>methods</span><span class=o>=</span><span class=p>[</span><span class=s2>&#34;POST&#34;</span><span class=p>]),</span>
+</span></span><span class=line><span class=cl>    <span class=p>],</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nd>@app.on_event</span><span class=p>(</span><span class=s2>&#34;startup&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=k>async</span> <span class=k>def</span> <span class=nf>startup_event</span><span class=p>():</span>
+</span></span><span class=line><span class=cl>    <span class=n>q</span> <span class=o>=</span> <span class=n>asyncio</span><span class=o>.</span><span class=n>Queue</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=n>app</span><span class=o>.</span><span class=n>model_queue</span> <span class=o>=</span> <span class=n>q</span>
+</span></span><span class=line><span class=cl>    <span class=n>asyncio</span><span class=o>.</span><span class=n>create_task</span><span class=p>(</span><span class=n>server_loop</span><span class=p>(</span><span class=n>q</span><span class=p>))</span>
+</span></span></code></pre></td></tr></table></div></div><p>Then you can execute it with</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>uvicorn hf_serve.serving_fastapi:app --host 0.0.0.0 --port <span class=m>8000</span>
+</span></span></code></pre></td></tr></table></div></div><p>To test it, you can use curl or postman to send a POST request to the server.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>curl -X POST -H <span class=s2>&#34;Content-Type: application/json&#34;</span> -d <span class=s1>&#39;{&#34;text&#34;: &#34;Hello world&#34;}&#39;</span> http://localhost:8000
+</span></span></code></pre></td></tr></table></div></div><p>You will see something like this:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span><span class=lnt>43
+</span><span class=lnt>44
+</span><span class=lnt>45
+</span><span class=lnt>46
+</span><span class=lnt>47
+</span><span class=lnt>48
+</span><span class=lnt>49
+</span><span class=lnt>50
+</span><span class=lnt>51
+</span><span class=lnt>52
+</span><span class=lnt>53
+</span><span class=lnt>54
+</span><span class=lnt>55
+</span><span class=lnt>56
+</span><span class=lnt>57
+</span><span class=lnt>58
+</span><span class=lnt>59
+</span><span class=lnt>60
+</span><span class=lnt>61
+</span><span class=lnt>62
+</span><span class=lnt>63
+</span><span class=lnt>64
+</span><span class=lnt>65
+</span><span class=lnt>66
+</span><span class=lnt>67
+</span><span class=lnt>68
+</span><span class=lnt>69
+</span><span class=lnt>70
+</span><span class=lnt>71
+</span><span class=lnt>72
+</span><span class=lnt>73
+</span><span class=lnt>74
+</span><span class=lnt>75
+</span><span class=lnt>76
+</span><span class=lnt>77
+</span><span class=lnt>78
+</span><span class=lnt>79
+</span><span class=lnt>80
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-json data-lang=json><span class=line><span class=cl><span class=p>[</span>
+</span></span><span class=line><span class=cl>  <span class=p>[</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;label&#34;</span><span class=p>:</span> <span class=s2>&#34;diaries_&amp;_daily_life&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;score&#34;</span><span class=p>:</span> <span class=mf>0.6784588694572449</span>
+</span></span><span class=line><span class=cl>    <span class=p>},</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;label&#34;</span><span class=p>:</span> <span class=s2>&#34;other_hobbies&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;score&#34;</span><span class=p>:</span> <span class=mf>0.16906404495239258</span>
+</span></span><span class=line><span class=cl>    <span class=p>},</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;label&#34;</span><span class=p>:</span> <span class=s2>&#34;relationships&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;score&#34;</span><span class=p>:</span> <span class=mf>0.1307423859834671</span>
+</span></span><span class=line><span class=cl>    <span class=p>},</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;label&#34;</span><span class=p>:</span> <span class=s2>&#34;film_tv_&amp;_video&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;score&#34;</span><span class=p>:</span> <span class=mf>0.045063380151987076</span>
+</span></span><span class=line><span class=cl>    <span class=p>},</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;label&#34;</span><span class=p>:</span> <span class=s2>&#34;arts_&amp;_culture&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;score&#34;</span><span class=p>:</span> <span class=mf>0.04253656417131424</span>
+</span></span><span class=line><span class=cl>    <span class=p>},</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;label&#34;</span><span class=p>:</span> <span class=s2>&#34;celebrity_&amp;_pop_culture&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;score&#34;</span><span class=p>:</span> <span class=mf>0.02954648993909359</span>
+</span></span><span class=line><span class=cl>    <span class=p>},</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;label&#34;</span><span class=p>:</span> <span class=s2>&#34;music&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;score&#34;</span><span class=p>:</span> <span class=mf>0.017763793468475342</span>
+</span></span><span class=line><span class=cl>    <span class=p>},</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;label&#34;</span><span class=p>:</span> <span class=s2>&#34;family&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;score&#34;</span><span class=p>:</span> <span class=mf>0.013196156360208988</span>
+</span></span><span class=line><span class=cl>    <span class=p>},</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;label&#34;</span><span class=p>:</span> <span class=s2>&#34;news_&amp;_social_concern&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;score&#34;</span><span class=p>:</span> <span class=mf>0.009492534212768078</span>
+</span></span><span class=line><span class=cl>    <span class=p>},</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;label&#34;</span><span class=p>:</span> <span class=s2>&#34;learning_&amp;_educational&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;score&#34;</span><span class=p>:</span> <span class=mf>0.007527184206992388</span>
+</span></span><span class=line><span class=cl>    <span class=p>},</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;label&#34;</span><span class=p>:</span> <span class=s2>&#34;gaming&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;score&#34;</span><span class=p>:</span> <span class=mf>0.005994295235723257</span>
+</span></span><span class=line><span class=cl>    <span class=p>},</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;label&#34;</span><span class=p>:</span> <span class=s2>&#34;travel_&amp;_adventure&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;score&#34;</span><span class=p>:</span> <span class=mf>0.005782891530543566</span>
+</span></span><span class=line><span class=cl>    <span class=p>},</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;label&#34;</span><span class=p>:</span> <span class=s2>&#34;sports&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;score&#34;</span><span class=p>:</span> <span class=mf>0.005135056562721729</span>
+</span></span><span class=line><span class=cl>    <span class=p>},</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;label&#34;</span><span class=p>:</span> <span class=s2>&#34;business_&amp;_entrepreneurs&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;score&#34;</span><span class=p>:</span> <span class=mf>0.004528014920651913</span>
+</span></span><span class=line><span class=cl>    <span class=p>},</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;label&#34;</span><span class=p>:</span> <span class=s2>&#34;youth_&amp;_student_life&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;score&#34;</span><span class=p>:</span> <span class=mf>0.004223798401653767</span>
+</span></span><span class=line><span class=cl>    <span class=p>},</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;label&#34;</span><span class=p>:</span> <span class=s2>&#34;science_&amp;_technology&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;score&#34;</span><span class=p>:</span> <span class=mf>0.0038613160140812397</span>
+</span></span><span class=line><span class=cl>    <span class=p>},</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;label&#34;</span><span class=p>:</span> <span class=s2>&#34;food_&amp;_dining&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;score&#34;</span><span class=p>:</span> <span class=mf>0.0025304360315203667</span>
+</span></span><span class=line><span class=cl>    <span class=p>},</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;label&#34;</span><span class=p>:</span> <span class=s2>&#34;fashion_&amp;_style&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;score&#34;</span><span class=p>:</span> <span class=mf>0.0022351129446178675</span>
+</span></span><span class=line><span class=cl>    <span class=p>},</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;label&#34;</span><span class=p>:</span> <span class=s2>&#34;fitness_&amp;_health&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&#34;score&#34;</span><span class=p>:</span> <span class=mf>0.0014648066135123372</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>  <span class=p>]</span>
+</span></span><span class=line><span class=cl><span class=p>]</span>
+</span></span></code></pre></td></tr></table></div></div><p>In the original documentation, the model prediction only shows the best label. But in my case, I want to see all the labels and their scores. So I changed the code a little bit.</p><h2 id=use-fastapi-as-web-server>Use FastAPI as Web Server</h2><p>I also tried to use FastAPI as web server. This is only because I am more familiar with FastAPI and there is no particular taste for me.<br>And this makes it a good exercice to learn Starlette and FastApi.</p><p>The code is in the <code>hf_serve/serving_fastapi.py</code> file.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=line><span class=cl><span class=c1># hf_serve/serving_fastapi.py</span>
+</span></span><span class=line><span class=cl><span class=kn>from</span> <span class=nn>fastapi</span> <span class=kn>import</span> <span class=n>FastAPI</span>
+</span></span><span class=line><span class=cl><span class=kn>from</span> <span class=nn>fastapi</span> <span class=kn>import</span> <span class=n>Request</span><span class=p>,</span> <span class=n>Response</span>
+</span></span><span class=line><span class=cl><span class=kn>from</span> <span class=nn>transformers</span> <span class=kn>import</span> <span class=n>pipeline</span>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=nn>asyncio</span>
+</span></span><span class=line><span class=cl><span class=kn>from</span> <span class=nn>hf_serve.config</span> <span class=kn>import</span> <span class=n>DEVICE</span><span class=p>,</span> <span class=n>MODEL</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=n>app</span> <span class=o>=</span> <span class=n>FastAPI</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nd>@app.post</span><span class=p>(</span><span class=s2>&#34;/&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=k>async</span> <span class=k>def</span> <span class=nf>homepage</span><span class=p>(</span><span class=n>request</span><span class=p>:</span> <span class=n>Request</span><span class=p>,</span> <span class=n>response</span><span class=p>:</span> <span class=n>Response</span><span class=p>):</span>
+</span></span><span class=line><span class=cl>    <span class=n>payload</span> <span class=o>=</span> <span class=k>await</span> <span class=n>request</span><span class=o>.</span><span class=n>body</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=n>string</span> <span class=o>=</span> <span class=n>payload</span><span class=o>.</span><span class=n>decode</span><span class=p>(</span><span class=s2>&#34;utf-8&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>response_q</span> <span class=o>=</span> <span class=n>asyncio</span><span class=o>.</span><span class=n>Queue</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=k>await</span> <span class=n>app</span><span class=o>.</span><span class=n>model_queue</span><span class=o>.</span><span class=n>put</span><span class=p>((</span><span class=n>string</span><span class=p>,</span> <span class=n>response_q</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>    <span class=n>output</span> <span class=o>=</span> <span class=k>await</span> <span class=n>response_q</span><span class=o>.</span><span class=n>get</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=n>response</span><span class=o>.</span><span class=n>status_code</span> <span class=o>=</span> <span class=mi>200</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=n>output</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nd>@app.on_event</span><span class=p>(</span><span class=s2>&#34;startup&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=k>async</span> <span class=k>def</span> <span class=nf>startup_event</span><span class=p>():</span>
+</span></span><span class=line><span class=cl>    <span class=n>q</span> <span class=o>=</span> <span class=n>asyncio</span><span class=o>.</span><span class=n>Queue</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>    <span class=n>app</span><span class=o>.</span><span class=n>model_queue</span> <span class=o>=</span> <span class=n>q</span>
+</span></span><span class=line><span class=cl>    <span class=n>asyncio</span><span class=o>.</span><span class=n>create_task</span><span class=p>(</span><span class=n>server_loop</span><span class=p>(</span><span class=n>q</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>async</span> <span class=k>def</span> <span class=nf>server_loop</span><span class=p>(</span><span class=n>q</span><span class=p>):</span>
+</span></span><span class=line><span class=cl>    <span class=n>pipe</span> <span class=o>=</span> <span class=n>pipeline</span><span class=p>(</span><span class=n>model</span><span class=o>=</span><span class=n>MODEL</span><span class=p>,</span> <span class=n>top_k</span><span class=o>=</span><span class=kc>None</span><span class=p>,</span> <span class=n>device</span><span class=o>=</span><span class=n>DEVICE</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=k>while</span> <span class=kc>True</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>        <span class=p>(</span><span class=n>string</span><span class=p>,</span> <span class=n>response_q</span><span class=p>)</span> <span class=o>=</span> <span class=k>await</span> <span class=n>q</span><span class=o>.</span><span class=n>get</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>        <span class=n>out</span> <span class=o>=</span> <span class=n>pipe</span><span class=p>(</span><span class=n>string</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>        <span class=k>await</span> <span class=n>response_q</span><span class=o>.</span><span class=n>put</span><span class=p>(</span><span class=n>out</span><span class=p>)</span>
+</span></span></code></pre></td></tr></table></div></div><p>The test will be the same as for Starlette.</p><h2 id=dockerize-the-web-server>Dockerize the Web Server</h2><p>To dockerize the web server, I created a <code>Dockerfile</code>.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-dockerfile data-lang=dockerfile><span class=line><span class=cl><span class=c># Use the official Python image as the base image</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=k>FROM</span><span class=w> </span><span class=s>nvidia/cuda:11.7.1-cudnn8-runtime-ubuntu22.04</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err>
+</span></span></span><span class=line><span class=cl><span class=c># Set the working directory in the container</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=k>WORKDIR</span><span class=w> </span><span class=s>/app</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err>
+</span></span></span><span class=line><span class=cl><span class=c># Copy the requirements file into the container</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=k>COPY</span> pyproject.toml .<span class=err>
+</span></span></span><span class=line><span class=cl><span class=k>COPY</span> poetry.lock .<span class=err>
+</span></span></span><span class=line><span class=cl><span class=k>COPY</span> README.md .<span class=err>
+</span></span></span><span class=line><span class=cl><span class=k>COPY</span> hf_serve ./hf_serve<span class=err>
+</span></span></span><span class=line><span class=cl><span class=c># Install the necessary packages</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=k>RUN</span> apt-get update <span class=o>&amp;&amp;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl>    apt-get install -y --no-install-recommends <span class=se>\
+</span></span></span><span class=line><span class=cl>        libgomp1 <span class=se>\
+</span></span></span><span class=line><span class=cl>        python3.10 <span class=se>\
+</span></span></span><span class=line><span class=cl>        python3-pip <span class=se>\
+</span></span></span><span class=line><span class=cl>        <span class=o>&amp;&amp;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl>    rm -rf /var/lib/apt/lists/*<span class=err>
+</span></span></span><span class=line><span class=cl><span class=err>
+</span></span></span><span class=line><span class=cl><span class=k>RUN</span> ln -s /usr/bin/python3 /usr/bin/python <span class=err>
+</span></span></span><span class=line><span class=cl><span class=err>
+</span></span></span><span class=line><span class=cl><span class=k>RUN</span> pip install poetry <span class=o>&amp;&amp;</span> poetry config virtualenvs.create <span class=nb>false</span> <span class=o>&amp;&amp;</span> poetry install <span class=o>&amp;&amp;</span> rm -rf ~/.cache<span class=err>
+</span></span></span><span class=line><span class=cl><span class=err>
+</span></span></span><span class=line><span class=cl><span class=c># Install pytorch with cuda</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=k>RUN</span> pip install torch  --index-url https://download.pytorch.org/whl/cu118 --no-cache-dir<span class=err>
+</span></span></span><span class=line><span class=cl><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err>
+</span></span></span><span class=line><span class=cl><span class=c># Expose the port that the application will run on</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=k>EXPOSE</span><span class=w> </span><span class=s>80</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err>
+</span></span></span><span class=line><span class=cl><span class=c># Start the application when the container starts</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=k>CMD</span> <span class=p>[</span><span class=s2>&#34;python&#34;</span><span class=p>,</span> <span class=s2>&#34;-m&#34;</span><span class=p>,</span> <span class=s2>&#34;uvicorn&#34;</span><span class=p>,</span> <span class=s2>&#34;hf_serve.serving_fastapi:app&#34;</span><span class=p>,</span> <span class=s2>&#34;--host&#34;</span><span class=p>,</span> <span class=s2>&#34;0.0.0.0&#34;</span><span class=p>,</span> <span class=s2>&#34;--port&#34;</span><span class=p>,</span> <span class=s2>&#34;80&#34;</span><span class=p>]</span><span class=err>
+</span></span></span></code></pre></td></tr></table></div></div><p>It takes the <code>nvidia/cuda:11.7.1-cudnn8-runtime-ubuntu22.04</code> image as the base image.<br>Then it installs the necessary packages and pytorch with cuda.<br>Finally, it starts the web server.</p><p>To build the image, you can use the following command.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>docker build -t hf_serve .
+</span></span></code></pre></td></tr></table></div></div><p>To run the image, you can use the following command.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>docker run -p 8000:80 hf_serve
+</span></span></code></pre></td></tr></table></div></div><p>If you want to use the GPU, you can use the following command.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>docker run --runtime<span class=o>=</span>nvidia -p 8000:80 hf_serve
+</span></span></code></pre></td></tr></table></div></div><h2 id=conclusion--performance-test>Conclusion & Performance Test</h2><p>In this article, I showed how to use the <code>transformers</code> library to serve a HF Pipeline with Starlette and FastAPI.<br>FastAPI is not always the best option. It depends on the use case. Since it&rsquo;s widely used, it&rsquo;s a good option to learn.<br>If you are curious about the performance, you can check the <a class=link href="https://web-frameworks-benchmark.netlify.app/result?l=python" target=_blank rel=noopener>benchmark</a>.<br>In this benchmark, Starlette is way faster than FastAPI with almost 40% of difference. (Later on, I cheked on the FastAPI&rsquo;s doc and find out that FastAPI is fully compatible with (and based on) Starlette.)
+It would be also interesting to see how the performance changes with the number of requests.In the next article, I will use <a class=link href=https://github.com/locustio/locust target=_blank rel=noopener>Locust</a> to benchmark the performance of the web server with the pipeline.
+I want to see also how torchserve can improve the performance compared to these two web servers.<br>Then let&rsquo;s see how LRU cache/ Redis can improve the performance of server load in a next article.</p></section><footer class=article-footer><section class=article-tags><a href=/tags/transformers/>Transformers</a>
+<a href=/tags/huggingface/>Huggingface</a>
+<a href=/tags/nlp/>NLP</a>
+<a href=/tags/ml/>ML</a>
+<a href=/tags/python/>Python</a>
+<a href=/tags/web-server/>Web Server</a>
+<a href=/tags/starlette/>Starlette</a>
+<a href=/tags/fastapi/>FastAPI</a>
+<a href=/tags/pytorch/>PyTorch</a>
+<a href=/tags/mlops/>MLOps</a></section></footer></article><aside class=related-content--wrapper><h2 class=section-title>Related content</h2><div class=related-content><div class="flex article-list--tile"><article><a href=/p/mlops-data-management-in-mlops/><div class=article-details><h2 class=article-title>[MLOps] Data Management in MLOps</h2></div></a></article></div></div></aside><div class=disqus-container><div id=disqus_thread></div><script>window.disqus_config=function(){},function(){if(["localhost","127.0.0.1"].indexOf(window.location.hostname)!=-1){document.getElementById("disqus_thread").innerHTML="Disqus comments not available by default when the website is previewed locally.";return}var t=document,e=t.createElement("script");e.async=!0,e.src="//hugo-theme-stack.disqus.com/embed.js",e.setAttribute("data-timestamp",+new Date),(t.head||t.body).appendChild(e)}()</script><noscript>Please enable JavaScript to view the <a href=https://disqus.com/?ref_noscript>comments powered by Disqus.</a></noscript><a href=https://disqus.com class=dsq-brlink>comments powered by <span class=logo-disqus>Disqus</span></a></div><style>.disqus-container{background-color:var(--card-background);border-radius:var(--card-border-radius);box-shadow:var(--shadow-l1);padding:var(--card-padding)}</style><script>window.addEventListener("onColorSchemeChange",e=>{typeof DISQUS=="object"&&DISQUS.reset({reload:!0})})</script><footer class=site-footer><section class=copyright>&copy;
+2023 -
+2025 Haoxian's Blog</section><section class=powerby>Built with <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a><br>Theme <b><a href=https://github.com/CaiJimmy/hugo-theme-stack target=_blank rel=noopener data-version=3.33.0>Stack</a></b> designed by <a href=https://jimmycai.com target=_blank rel=noopener>Jimmy</a></section></footer><div class=pswp tabindex=-1 role=dialog aria-hidden=true><div class=pswp__bg></div><div class=pswp__scroll-wrap><div class=pswp__container><div class=pswp__item></div><div class=pswp__item></div><div class=pswp__item></div></div><div class="pswp__ui pswp__ui--hidden"><div class=pswp__top-bar><div class=pswp__counter></div><button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+<button class="pswp__button pswp__button--share" title=Share></button>
+<button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+<button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button><div class=pswp__preloader><div class=pswp__preloader__icn><div class=pswp__preloader__cut><div class=pswp__preloader__donut></div></div></div></div></div><div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap"><div class=pswp__share-tooltip></div></div><button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+</button>
+<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)"></button><div class=pswp__caption><div class=pswp__caption__center></div></div></div></div></div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css crossorigin=anonymous></main></div><script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z+KMkF24hUW8WePSA9HM=" crossorigin=anonymous></script><script type=text/javascript src=/ts/main.c922af694cc257bf1ecc41c0dd7b0430f9114ec280ccf67cd2c6ad55f5316c4e.js defer></script><script>(function(){const e=document.createElement("link");e.href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap",e.type="text/css",e.rel="stylesheet",document.head.appendChild(e)})()</script></body></html>

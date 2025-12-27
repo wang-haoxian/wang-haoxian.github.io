@@ -1,0 +1,277 @@
+<!doctype html><html lang=en-us dir=ltr><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><meta name=description content="Quick notes for my K3D cluster setup"><title>[K8S] Setup K3D</title><link rel=canonical href=https://www.haoxian.icu/p/k8s-setup-k3d/><link rel=stylesheet href=/scss/style.min.833d6eed45de56f48306bf57268d5b8cdfc8a60e8e7bdc99810464fcd033f7c6.css><meta property='og:title' content="[K8S] Setup K3D"><meta property='og:description' content="Quick notes for my K3D cluster setup"><meta property='og:url' content='https://www.haoxian.icu/p/k8s-setup-k3d/'><meta property='og:site_name' content="Haoxian's Blog"><meta property='og:type' content='article'><meta property='article:section' content='Post'><meta property='article:tag' content='K3D'><meta property='article:tag' content='K8S'><meta property='article:tag' content='Kubernetes'><meta property='article:tag' content='Docker'><meta property='article:published_time' content='2023-02-18T13:00:06+09:00'><meta property='article:modified_time' content='2023-02-18T13:00:06+09:00'><meta name=twitter:title content="[K8S] Setup K3D"><meta name=twitter:description content="Quick notes for my K3D cluster setup"><link rel="shortcut icon" href=/favicon.svg></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label="Toggle Menu">
+<span class=hamburger-box><span class=hamburger-inner></span></span></button><header><figure class=site-avatar><a href=/><img src=/img/avatar_hu_a8dd701257cc3205.jpg width=300 height=400 class=site-logo loading=lazy alt=Avatar></a></figure><div class=site-meta><h1 class=site-name><a href=/>Haoxian's Blog</a></h1><h2 class=site-description>From NLP to MLOps and LLM</h2></div></header><ol class=menu-social><li><a href=https://github.com/wang-haoxian target=_blank title=GitHub rel=me><svg class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6.0 00-1.3-3.2 4.2 4.2.0 00-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3.0 00-6.2.0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2.0 00-.1 3.2A4.6 4.6.0 004 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg></a></li></ol><ol class=menu id=main-menu><li><a href=/><svg class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="5 12 3 12 12 3 21 12 19 12"/><path d="M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/><path d="M9 21v-6a2 2 0 012-2h2a2 2 0 012 2v6"/></svg>
+<span>Home</span></a></li><li><a href=/archives/><svg class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><rect x="3" y="4" width="18" height="4" rx="2"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+<span>Archives</span></a></li><li><a href=/search/><svg class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>
+<span>Search</span></a></li><li><a href=/links/><svg class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M10 14a3.5 3.5.0 005 0l4-4a3.5 3.5.0 00-5-5l-.5.5"/><path d="M14 10a3.5 3.5.0 00-5 0l-4 4a3.5 3.5.0 005 5l.5-.5"/></svg>
+<span>Links</span></a></li><li class=menu-bottom-section><ol class=menu><li id=dark-mode-toggle><svg class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="8" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
+<svg class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="16" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
+<span>Dark Mode</span></li></ol></li></ol></aside><aside class="sidebar right-sidebar sticky"><section class="widget archives"><div class=widget-icon><svg class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg></div><h2 class="widget-title section-title">Table of contents</h2><div class=widget--toc><nav id=TableOfContents><ol><li><a href=#context>Context</a></li><li><a href=#quick-start-with-k3d>Quick start with K3D</a></li><li><a href=#create-cluster-with-yaml-config>Create cluster with YAML config</a></li><li><a href=#references>References</a></li><li><a href=#notes>Notes</a></li></ol></nav></div></section></aside><main class="main full-width"><article class=main-article><header class=article-header><div class=article-details><div class=article-title-wrapper><h2 class=article-title><a href=/p/k8s-setup-k3d/>[K8S] Setup K3D</a></h2><h3 class=article-subtitle>Quick notes for my K3D cluster setup</h3></div><footer class=article-time><div><svg class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
+<time class=article-time--published datetime=2023-02-18T13:00:06+09:00>Feb 18, 2023</time></div><div><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<time class=article-time--reading>7 minute read</time></div></footer></div></header><section class=article-content><h2 id=context>Context</h2><p>Recently, I am trying to make full use of my i7-12700 CPU and the 96G RAM that I install for it. The ideal thing for me is to be able to practice MLOps on a k8s cluster. However, it&rsquo;s never easy for bare-metal devices to make a whole cluster with many nodes. Maybe with Docker Desktop it will be easy, but then I may lose the chance to learn.</p><p>I have tested microk8s before. However, there are always some weird things that stop me from just getting the basic control plane. This is probably because it was installed with snap. Anyways, I ran into different solutions. Another solution that I have tested is Minikube. Nice and clean but for a single node. I would like to make it more complicated. K3S is a good one and I have installed it on three low-end laptops with my NAS to make a 1 server and 3 agents cluster. It was funny and I succeeded to run some applications on it. Now that I am on a single machine and I want to simulate a multi-node cluster, the ideal way would be to create several VMs and set up the cluster with them which is tedious. To avoid this, some automation tools like Ansible are one of the best choices. I am not yet ready to get my hands dirty on VMs while my objective is to learn to make things on K8S. K3D is a good alternative based on K3S.</p><p>K3D is a docker version of K3S. It uses docker to simulate nodes and Docker in Docker to run apps on it.</p><h2 id=quick-start-with-k3d>Quick start with K3D</h2><p>The installation is as handy as the docker installation script:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-Shell data-lang=Shell><span class=line><span class=cl>wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh <span class=p>|</span> bash
+</span></span></code></pre></td></tr></table></div></div><p>To create a cluster:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-Shell data-lang=Shell><span class=line><span class=cl>k3d cluster create test-cluster
+</span></span></code></pre></td></tr></table></div></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-gdscript3 data-lang=gdscript3><span class=line><span class=cl><span class=n>INFO</span><span class=p>[</span><span class=mi>0000</span><span class=p>]</span> <span class=n>Prep</span><span class=p>:</span> <span class=n>Network</span>                                
+</span></span><span class=line><span class=cl><span class=n>INFO</span><span class=p>[</span><span class=mi>0000</span><span class=p>]</span> <span class=n>Created</span> <span class=n>network</span> <span class=s1>&#39;k3d-test-cluster&#39;</span>           
+</span></span><span class=line><span class=cl><span class=n>INFO</span><span class=p>[</span><span class=mi>0000</span><span class=p>]</span> <span class=n>Created</span> <span class=n>image</span> <span class=n>volume</span> <span class=n>k3d</span><span class=o>-</span><span class=n>test</span><span class=o>-</span><span class=n>cluster</span><span class=o>-</span><span class=n>images</span> 
+</span></span><span class=line><span class=cl><span class=n>INFO</span><span class=p>[</span><span class=mi>0000</span><span class=p>]</span> <span class=n>Starting</span> <span class=n>new</span> <span class=n>tools</span> <span class=n>node</span><span class=o>...</span>                   
+</span></span><span class=line><span class=cl><span class=n>INFO</span><span class=p>[</span><span class=mi>0000</span><span class=p>]</span> <span class=n>Starting</span> <span class=ne>Node</span> <span class=s1>&#39;k3d-test-cluster-tools&#39;</span>       
+</span></span><span class=line><span class=cl><span class=n>INFO</span><span class=p>[</span><span class=mi>0001</span><span class=p>]</span> <span class=n>Creating</span> <span class=n>node</span> <span class=s1>&#39;k3d-test-cluster-server-0&#39;</span>    
+</span></span><span class=line><span class=cl><span class=n>INFO</span><span class=p>[</span><span class=mi>0001</span><span class=p>]</span> <span class=n>Creating</span> <span class=n>LoadBalancer</span> <span class=s1>&#39;k3d-test-cluster-serverlb&#39;</span> 
+</span></span><span class=line><span class=cl><span class=n>INFO</span><span class=p>[</span><span class=mi>0001</span><span class=p>]</span> <span class=n>Using</span> <span class=n>the</span> <span class=n>k3d</span><span class=o>-</span><span class=n>tools</span> <span class=n>node</span> <span class=n>to</span> <span class=n>gather</span> <span class=n>environment</span> <span class=n>information</span> 
+</span></span><span class=line><span class=cl><span class=n>INFO</span><span class=p>[</span><span class=mi>0001</span><span class=p>]</span> <span class=n>HostIP</span><span class=p>:</span> <span class=n>using</span> <span class=n>network</span> <span class=n>gateway</span> <span class=mf>192.168</span><span class=o>.</span><span class=mf>144.1</span> <span class=n>address</span> 
+</span></span><span class=line><span class=cl><span class=n>INFO</span><span class=p>[</span><span class=mi>0001</span><span class=p>]</span> <span class=n>Starting</span> <span class=n>cluster</span> <span class=s1>&#39;test-cluster&#39;</span>              
+</span></span><span class=line><span class=cl><span class=n>INFO</span><span class=p>[</span><span class=mi>0001</span><span class=p>]</span> <span class=n>Starting</span> <span class=n>servers</span><span class=o>...</span>                          
+</span></span><span class=line><span class=cl><span class=n>INFO</span><span class=p>[</span><span class=mi>0001</span><span class=p>]</span> <span class=n>Starting</span> <span class=ne>Node</span> <span class=s1>&#39;k3d-test-cluster-server-0&#39;</span>    
+</span></span><span class=line><span class=cl><span class=n>INFO</span><span class=p>[</span><span class=mi>0005</span><span class=p>]</span> <span class=n>All</span> <span class=n>agents</span> <span class=n>already</span> <span class=n>running</span><span class=o>.</span>                  
+</span></span><span class=line><span class=cl><span class=n>INFO</span><span class=p>[</span><span class=mi>0005</span><span class=p>]</span> <span class=n>Starting</span> <span class=n>helpers</span><span class=o>...</span>                          
+</span></span><span class=line><span class=cl><span class=n>INFO</span><span class=p>[</span><span class=mi>0005</span><span class=p>]</span> <span class=n>Starting</span> <span class=ne>Node</span> <span class=s1>&#39;k3d-test-cluster-serverlb&#39;</span>    
+</span></span><span class=line><span class=cl><span class=n>INFO</span><span class=p>[</span><span class=mi>0011</span><span class=p>]</span> <span class=n>Injecting</span> <span class=n>records</span> <span class=k>for</span> <span class=n>hostAliases</span> <span class=p>(</span><span class=n>incl</span><span class=o>.</span> <span class=n>host</span><span class=o>.</span><span class=n>k3d</span><span class=o>.</span><span class=n>internal</span><span class=p>)</span> <span class=ow>and</span> <span class=k>for</span> <span class=mi>2</span> <span class=n>network</span> <span class=n>members</span> <span class=n>into</span> <span class=n>CoreDNS</span> <span class=n>configmap</span><span class=o>...</span> 
+</span></span><span class=line><span class=cl><span class=n>INFO</span><span class=p>[</span><span class=mi>0013</span><span class=p>]</span> <span class=n>Cluster</span> <span class=s1>&#39;test-cluster&#39;</span> <span class=n>created</span> <span class=n>successfully</span><span class=o>!</span> 
+</span></span><span class=line><span class=cl><span class=n>INFO</span><span class=p>[</span><span class=mi>0013</span><span class=p>]</span> <span class=n>You</span> <span class=n>can</span> <span class=n>now</span> <span class=n>use</span> <span class=n>it</span> <span class=n>like</span> <span class=n>this</span><span class=p>:</span>                
+</span></span><span class=line><span class=cl><span class=n>kubectl</span> <span class=n>cluster</span><span class=o>-</span><span class=n>info</span>
+</span></span></code></pre></td></tr></table></div></div><p>A single node cluster is created.
+Then check the nodes:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-Shell data-lang=Shell><span class=line><span class=cl>kubectl get nodes
+</span></span></code></pre></td></tr></table></div></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>NAME                        STATUS   ROLES                  AGE   VERSION
+</span></span><span class=line><span class=cl>k3d-test-cluster-server-0   Ready    control-plane,master   59s   v1.25.6+k3s1
+</span></span></code></pre></td></tr></table></div></div><p>Check the cluster status</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-Shell data-lang=Shell><span class=line><span class=cl>kubectl cluster-info
+</span></span></code></pre></td></tr></table></div></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>Kubernetes control plane is running at https://0.0.0.0:38483
+</span></span><span class=line><span class=cl>CoreDNS is running at https://0.0.0.0:38483/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
+</span></span><span class=line><span class=cl>Metrics-server is running at https://0.0.0.0:38483/api/v1/namespaces/kube-system/services/https:metrics-server:https/proxy
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>To further debug and diagnose cluster problems, use &#39;kubectl cluster-info dump&#39;.
+</span></span></code></pre></td></tr></table></div></div><h2 id=create-cluster-with-yaml-config>Create cluster with YAML config</h2><p>It&rsquo;s also a good idea to use YAML file to create the cluster. This allows us to duplicate the cluster easily and easier for us to recreate the whole environment from disaster. For experimental purposes for Devtron, I will make a 3 nodes cluster with 1 server and 2 agents. The convenient part of K3D is that you can spin up more nodes later quickly.</p><p>The config file is like below:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-YAML data-lang=YAML><span class=line><span class=cl><span class=c># devtron_cluster.yaml</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>apiVersion</span><span class=p>:</span><span class=w> </span><span class=l>k3d.io/v1alpha4</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>kind</span><span class=p>:</span><span class=w> </span><span class=l>Simple</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>metadata</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>cluster</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>servers</span><span class=p>:</span><span class=w> </span><span class=m>1</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>agents</span><span class=p>:</span><span class=w> </span><span class=m>2</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>ports</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span>- <span class=nt>port</span><span class=p>:</span><span class=w> </span><span class=m>8082</span><span class=p>:</span><span class=m>30000</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>nodeFilters</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=l>loadbalancer</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span>- <span class=nt>port</span><span class=p>:</span><span class=w> </span><span class=m>30080-30100</span><span class=p>:</span><span class=m>30080-30100</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>nodeFilters</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=l>loadbalancer</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><p>Then use:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-Bash data-lang=Bash><span class=line><span class=cl>k3d cluster create --config devtron_cluster.yaml
+</span></span></code></pre></td></tr></table></div></div><p>to create the cluster.
+The important part is load blancer with forwarded ports.<br>As we know we need a public IP for our cluster. Cloud Providers allow you to use their &ldquo;Load Balancer&rdquo; to get a public IP and use it to access the apps inside. However, for on-premise implementation, we need to use solutions like <a class=link href=https://metallb.universe.tf/ target=_blank rel=noopener>MetaLB</a>. In K3D, we use a container to mimic this by exposing its ports. We will use 8082 for Devtron console and 30080-30100 for our applications.</p><p>A complete configuration file is like below</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span><span class=lnt>43
+</span><span class=lnt>44
+</span><span class=lnt>45
+</span><span class=lnt>46
+</span><span class=lnt>47
+</span><span class=lnt>48
+</span><span class=lnt>49
+</span><span class=lnt>50
+</span><span class=lnt>51
+</span><span class=lnt>52
+</span><span class=lnt>53
+</span><span class=lnt>54
+</span><span class=lnt>55
+</span><span class=lnt>56
+</span><span class=lnt>57
+</span><span class=lnt>58
+</span><span class=lnt>59
+</span><span class=lnt>60
+</span><span class=lnt>61
+</span><span class=lnt>62
+</span><span class=lnt>63
+</span><span class=lnt>64
+</span><span class=lnt>65
+</span><span class=lnt>66
+</span><span class=lnt>67
+</span><span class=lnt>68
+</span><span class=lnt>69
+</span><span class=lnt>70
+</span><span class=lnt>71
+</span><span class=lnt>72
+</span><span class=lnt>73
+</span><span class=lnt>74
+</span><span class=lnt>75
+</span><span class=lnt>76
+</span><span class=lnt>77
+</span><span class=lnt>78
+</span><span class=lnt>79
+</span><span class=lnt>80
+</span><span class=lnt>81
+</span><span class=lnt>82
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-YAML data-lang=YAML><span class=line><span class=cl><span class=c># k3d configuration file, saved as e.g. /home/me/myk3dcluster.yaml</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>apiVersion</span><span class=p>:</span><span class=w> </span><span class=l>k3d.io/v1alpha4</span><span class=w> </span><span class=c># this will change in the future as we make everything more stable</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>kind</span><span class=p>:</span><span class=w> </span><span class=l>Simple</span><span class=w> </span><span class=c># internally, we also have a Cluster config, which is not yet available externally</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>metadata</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>mycluster</span><span class=w> </span><span class=c># name that you want to give to your cluster (will still be prefixed with `k3d-`)</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>servers</span><span class=p>:</span><span class=w> </span><span class=m>1</span><span class=w> </span><span class=c># same as `--servers 1`</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>agents</span><span class=p>:</span><span class=w> </span><span class=m>2</span><span class=w> </span><span class=c># same as `--agents 2`</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>kubeAPI</span><span class=p>:</span><span class=w> </span><span class=c># same as `--api-port myhost.my.domain:6445` (where the name would resolve to 127.0.0.1)</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>host</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;myhost.my.domain&#34;</span><span class=w> </span><span class=c># important for the `server` setting in the kubeconfig</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>hostIP</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;127.0.0.1&#34;</span><span class=w> </span><span class=c># where the Kubernetes API will be listening on</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>hostPort</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;6445&#34;</span><span class=w> </span><span class=c># where the Kubernetes API listening port will be mapped to on your host system</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>image</span><span class=p>:</span><span class=w> </span><span class=l>rancher/k3s:v1.20.4-k3s1</span><span class=w> </span><span class=c># same as `--image rancher/k3s:v1.20.4-k3s1`</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>network</span><span class=p>:</span><span class=w> </span><span class=l>my-custom-net</span><span class=w> </span><span class=c># same as `--network my-custom-net`</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>subnet</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;172.28.0.0/16&#34;</span><span class=w> </span><span class=c># same as `--subnet 172.28.0.0/16`</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>token</span><span class=p>:</span><span class=w> </span><span class=l>superSecretToken</span><span class=w> </span><span class=c># same as `--token superSecretToken`</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>volumes</span><span class=p>:</span><span class=w> </span><span class=c># repeatable flags are represented as YAML lists</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span>- <span class=nt>volume</span><span class=p>:</span><span class=w> </span><span class=l>/my/host/path:/path/in/node</span><span class=w> </span><span class=c># same as `--volume &#39;/my/host/path:/path/in/node@server:0;agent:*&#39;`</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>nodeFilters</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=l>server:0</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=l>agent:*</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>ports</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span>- <span class=nt>port</span><span class=p>:</span><span class=w> </span><span class=m>8080</span><span class=p>:</span><span class=m>80</span><span class=w> </span><span class=c># same as `--port &#39;8080:80@loadbalancer&#39;`</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>nodeFilters</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=l>loadbalancer</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>env</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span>- <span class=nt>envVar</span><span class=p>:</span><span class=w> </span><span class=l>bar=baz</span><span class=w> </span><span class=c># same as `--env &#39;bar=baz@server:0&#39;`</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>nodeFilters</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=l>server:0</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>registries</span><span class=p>:</span><span class=w> </span><span class=c># define how registries should be created or used</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>create</span><span class=p>:</span><span class=w> </span><span class=c># creates a default registry to be used with the cluster; same as `--registry-create registry.localhost`</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>registry.localhost</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>host</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;0.0.0.0&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>hostPort</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;5000&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>proxy</span><span class=p>:</span><span class=w> </span><span class=c># omit this to have a &#34;normal&#34; registry, set this to create a registry proxy (pull-through cache)</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>remoteURL</span><span class=p>:</span><span class=w> </span><span class=l>https://registry-1.docker.io</span><span class=w> </span><span class=c># mirror the DockerHub registry</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>username</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;&#34;</span><span class=w> </span><span class=c># unauthenticated</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>password</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;&#34;</span><span class=w> </span><span class=c># unauthenticated</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>volumes</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=l>/some/path:/var/lib/registry</span><span class=w> </span><span class=c># persist registry data locally</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>use</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=l>k3d-myotherregistry:5000</span><span class=w> </span><span class=c># some other k3d-managed registry; same as `--registry-use &#39;k3d-myotherregistry:5000&#39;`</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>config</span><span class=p>:</span><span class=w> </span><span class=l>|</span><span class=w> </span><span class=c># define contents of the `registries.yaml` file (or reference a file); same as `--registry-config /path/to/config.yaml`</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>mirrors</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=s2>&#34;my.company.registry&#34;</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>endpoint</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>          </span>- <span class=l>http://my.company.registry:5000</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>hostAliases</span><span class=p>:</span><span class=w> </span><span class=c># /etc/hosts style entries to be injected into /etc/hosts in the node containers and in the NodeHosts section in CoreDNS</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span>- <span class=nt>ip</span><span class=p>:</span><span class=w> </span><span class=m>1.2.3.4</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>hostnames</span><span class=p>:</span><span class=w> 
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=l>my.host.local</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=l>that.other.local</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span>- <span class=nt>ip</span><span class=p>:</span><span class=w> </span><span class=m>1.1.1.1</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>hostnames</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=l>cloud.flare.dns</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>options</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>k3d</span><span class=p>:</span><span class=w> </span><span class=c># k3d runtime settings</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>wait: true # wait for cluster to be usable before returining; same as `--wait` (default</span><span class=p>:</span><span class=w> </span><span class=kc>true</span><span class=l>)</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>timeout</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;60s&#34;</span><span class=w> </span><span class=c># wait timeout before aborting; same as `--timeout 60s`</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>disableLoadbalancer</span><span class=p>:</span><span class=w> </span><span class=kc>false</span><span class=w> </span><span class=c># same as `--no-lb`</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>disableImageVolume</span><span class=p>:</span><span class=w> </span><span class=kc>false</span><span class=w> </span><span class=c># same as `--no-image-volume`</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>disableRollback</span><span class=p>:</span><span class=w> </span><span class=kc>false</span><span class=w> </span><span class=c># same as `--no-Rollback`</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>loadbalancer</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>configOverrides</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span>- <span class=l>settings.workerConnections=2048</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>k3s</span><span class=p>:</span><span class=w> </span><span class=c># options passed on to K3s itself</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>extraArgs</span><span class=p>:</span><span class=w> </span><span class=c># additional arguments passed to the `k3s server|agent` command; same as `--k3s-arg`</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=nt>arg</span><span class=p>:</span><span class=w> </span>--<span class=l>tls-san=my.host.domain</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>nodeFilters</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>          </span>- <span class=l>server:*</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>nodeLabels</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=nt>label</span><span class=p>:</span><span class=w> </span><span class=l>foo=bar</span><span class=w> </span><span class=c># same as `--k3s-node-label &#39;foo=bar@agent:1&#39;` -&gt; this results in a Kubernetes node label</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>nodeFilters</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>          </span>- <span class=l>agent:1</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>kubeconfig</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>updateDefaultKubeconfig: true # add new cluster to your default Kubeconfig; same as `--kubeconfig-update-default` (default</span><span class=p>:</span><span class=w> </span><span class=kc>true</span><span class=l>)</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>switchCurrentContext: true # also set current-context to the new cluster&#39;s context; same as `--kubeconfig-switch-context` (default</span><span class=p>:</span><span class=w> </span><span class=kc>true</span><span class=l>)</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>runtime</span><span class=p>:</span><span class=w> </span><span class=c># runtime (docker) specific options</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>gpuRequest</span><span class=p>:</span><span class=w> </span><span class=l>all</span><span class=w> </span><span class=c># same as `--gpus all`</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>labels</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=nt>label</span><span class=p>:</span><span class=w> </span><span class=l>bar=baz</span><span class=w> </span><span class=c># same as `--runtime-label &#39;bar=baz@agent:1&#39;` -&gt; this results in a runtime (docker) container label</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>nodeFilters</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>          </span>- <span class=l>agent:1</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><p>Now you have a running K3D cluster on your machine.
+In the next post, I will show you how to install devtron for CI/CD and so on.</p><h2 id=references>References</h2><p><a class=link href=https://k3d.io/v5.4.7/ target=_blank rel=noopener>https://k3d.io/v5.4.7/</a></p><h2 id=notes>Notes</h2><p>I finally moved to K3S because I got more machines and I wanted to have a real cluster.</p></section><footer class=article-footer><section class=article-tags><a href=/tags/k3d/>K3D</a>
+<a href=/tags/k8s/>K8S</a>
+<a href=/tags/kubernetes/>Kubernetes</a>
+<a href=/tags/docker/>Docker</a></section></footer></article><aside class=related-content--wrapper><h2 class=section-title>Related content</h2><div class=related-content><div class="flex article-list--tile"><article><a href=/p/k8s-use-k3d-to-implement-the-first-service/><div class=article-details><h2 class=article-title>[K8S] Use K3D to implement the first service</h2></div></a></article><article><a href=/p/k8s-setup-minio-s3-storage-in-k3s/><div class=article-details><h2 class=article-title>[K8S] Setup Minio S3 Storage in K3S</h2></div></a></article><article><a href=/p/k8s-use-metallb-as-k3s-load-balancer/><div class=article-details><h2 class=article-title>[K8S] Use MetalLB as K3S Load Balancer</h2></div></a></article></div></div></aside><div class=disqus-container><div id=disqus_thread></div><script>window.disqus_config=function(){},function(){if(["localhost","127.0.0.1"].indexOf(window.location.hostname)!=-1){document.getElementById("disqus_thread").innerHTML="Disqus comments not available by default when the website is previewed locally.";return}var t=document,e=t.createElement("script");e.async=!0,e.src="//hugo-theme-stack.disqus.com/embed.js",e.setAttribute("data-timestamp",+new Date),(t.head||t.body).appendChild(e)}()</script><noscript>Please enable JavaScript to view the <a href=https://disqus.com/?ref_noscript>comments powered by Disqus.</a></noscript><a href=https://disqus.com class=dsq-brlink>comments powered by <span class=logo-disqus>Disqus</span></a></div><style>.disqus-container{background-color:var(--card-background);border-radius:var(--card-border-radius);box-shadow:var(--shadow-l1);padding:var(--card-padding)}</style><script>window.addEventListener("onColorSchemeChange",e=>{typeof DISQUS=="object"&&DISQUS.reset({reload:!0})})</script><footer class=site-footer><section class=copyright>&copy;
+2023 -
+2025 Haoxian's Blog</section><section class=powerby>Built with <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a><br>Theme <b><a href=https://github.com/CaiJimmy/hugo-theme-stack target=_blank rel=noopener data-version=3.33.0>Stack</a></b> designed by <a href=https://jimmycai.com target=_blank rel=noopener>Jimmy</a></section></footer><div class=pswp tabindex=-1 role=dialog aria-hidden=true><div class=pswp__bg></div><div class=pswp__scroll-wrap><div class=pswp__container><div class=pswp__item></div><div class=pswp__item></div><div class=pswp__item></div></div><div class="pswp__ui pswp__ui--hidden"><div class=pswp__top-bar><div class=pswp__counter></div><button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+<button class="pswp__button pswp__button--share" title=Share></button>
+<button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+<button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button><div class=pswp__preloader><div class=pswp__preloader__icn><div class=pswp__preloader__cut><div class=pswp__preloader__donut></div></div></div></div></div><div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap"><div class=pswp__share-tooltip></div></div><button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+</button>
+<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)"></button><div class=pswp__caption><div class=pswp__caption__center></div></div></div></div></div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css crossorigin=anonymous></main></div><script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z+KMkF24hUW8WePSA9HM=" crossorigin=anonymous></script><script type=text/javascript src=/ts/main.c922af694cc257bf1ecc41c0dd7b0430f9114ec280ccf67cd2c6ad55f5316c4e.js defer></script><script>(function(){const e=document.createElement("link");e.href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap",e.type="text/css",e.rel="stylesheet",document.head.appendChild(e)})()</script></body></html>

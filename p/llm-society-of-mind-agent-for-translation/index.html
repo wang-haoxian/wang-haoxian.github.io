@@ -1,0 +1,440 @@
+<!doctype html><html lang=en-us dir=ltr><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><meta name=description content="Use autogen to create an agentic translation service with validation"><title>[LLM] Society of Mind Agent for translation</title><link rel=canonical href=https://www.haoxian.icu/p/llm-society-of-mind-agent-for-translation/><link rel=stylesheet href=/scss/style.min.833d6eed45de56f48306bf57268d5b8cdfc8a60e8e7bdc99810464fcd033f7c6.css><meta property='og:title' content="[LLM] Society of Mind Agent for translation"><meta property='og:description' content="Use autogen to create an agentic translation service with validation"><meta property='og:url' content='https://www.haoxian.icu/p/llm-society-of-mind-agent-for-translation/'><meta property='og:site_name' content="Haoxian's Blog"><meta property='og:type' content='article'><meta property='article:section' content='Post'><meta property='article:tag' content='LLM'><meta property='article:tag' content='Translation'><meta property='article:tag' content='Qwen'><meta property='article:tag' content='Agent'><meta property='article:tag' content='Autogen'><meta property='article:published_time' content='2025-02-01T11:00:06+09:00'><meta property='article:modified_time' content='2025-02-01T11:00:06+09:00'><meta name=twitter:title content="[LLM] Society of Mind Agent for translation"><meta name=twitter:description content="Use autogen to create an agentic translation service with validation"><link rel="shortcut icon" href=/favicon.svg></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label="Toggle Menu">
+<span class=hamburger-box><span class=hamburger-inner></span></span></button><header><figure class=site-avatar><a href=/><img src=/img/avatar_hu_a8dd701257cc3205.jpg width=300 height=400 class=site-logo loading=lazy alt=Avatar></a></figure><div class=site-meta><h1 class=site-name><a href=/>Haoxian's Blog</a></h1><h2 class=site-description>From NLP to MLOps and LLM</h2></div></header><ol class=menu-social><li><a href=https://github.com/wang-haoxian target=_blank title=GitHub rel=me><svg class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6.0 00-1.3-3.2 4.2 4.2.0 00-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3.0 00-6.2.0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2.0 00-.1 3.2A4.6 4.6.0 004 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg></a></li></ol><ol class=menu id=main-menu><li><a href=/><svg class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="5 12 3 12 12 3 21 12 19 12"/><path d="M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/><path d="M9 21v-6a2 2 0 012-2h2a2 2 0 012 2v6"/></svg>
+<span>Home</span></a></li><li><a href=/archives/><svg class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><rect x="3" y="4" width="18" height="4" rx="2"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+<span>Archives</span></a></li><li><a href=/search/><svg class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>
+<span>Search</span></a></li><li><a href=/links/><svg class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M10 14a3.5 3.5.0 005 0l4-4a3.5 3.5.0 00-5-5l-.5.5"/><path d="M14 10a3.5 3.5.0 00-5 0l-4 4a3.5 3.5.0 005 5l.5-.5"/></svg>
+<span>Links</span></a></li><li class=menu-bottom-section><ol class=menu><li id=dark-mode-toggle><svg class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="8" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
+<svg class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="16" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
+<span>Dark Mode</span></li></ol></li></ol></aside><aside class="sidebar right-sidebar sticky"><section class="widget archives"><div class=widget-icon><svg class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg></div><h2 class="widget-title section-title">Table of contents</h2><div class=widget--toc><nav id=TableOfContents><ol><li><a href=#autogen>Autogen</a></li><li><a href=#societyofmindagent>SocietyOfMindAgent</a></li><li><a href=#the-experiment>The experiment</a></li><li><a href=#final-thoughts>Final thoughts</a></li><li><a href=#references>References</a></li></ol></nav></div></section></aside><main class="main full-width"><article class=main-article><header class=article-header><div class=article-details><div class=article-title-wrapper><h2 class=article-title><a href=/p/llm-society-of-mind-agent-for-translation/>[LLM] Society of Mind Agent for translation</a></h2><h3 class=article-subtitle>Use autogen to create an agentic translation service with validation</h3></div><footer class=article-time><div><svg class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
+<time class=article-time--published datetime=2025-02-01T11:00:06+09:00>Feb 01, 2025</time></div><div><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<time class=article-time--reading>12 minute read</time></div></footer></div></header><section class=article-content><h1 id=agentic-translation-with-validation>Agentic Translation with validation</h1><p>In the previous post, I wrote about the LLM for translation. It was the most basic way to use the model to translate the text. However, the translation quality is not always good. In this post, I will try to use the model to generate the translation and validate it with a judge using SocietyOfMindAgent with AutoGen.</p><h2 id=autogen>Autogen</h2><p>Autogen is a framework for creating multi-agent AI applications that can act autonomously or work alongside humans creating by Microsoft. In this article, I will use the framework to create a translation service with a judge to validate the translation quality using the SocietyOfMindAgent.</p><h2 id=societyofmindagent>SocietyOfMindAgent</h2><p>Deepmind proposed in its paper Improving Factuality and Reasoning in Language Models through Multiagent Debate the &ldquo;society of mind&rdquo; approach inspired by Marvin Minsky&rsquo;s theory of the same name. This approach is also called language generation through multi-agent debate.
+The society of mind is a collection of agents that work together to solve a problem. Each agent has its own expertise and can communicate with other agents to solve the problem.</p><p>Example from Autogen&rsquo;s documentation:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=line><span class=cl>        <span class=kn>import</span> <span class=nn>asyncio</span>
+</span></span><span class=line><span class=cl>        <span class=kn>from</span> <span class=nn>autogen_agentchat.ui</span> <span class=kn>import</span> <span class=n>Console</span>
+</span></span><span class=line><span class=cl>        <span class=kn>from</span> <span class=nn>autogen_agentchat.agents</span> <span class=kn>import</span> <span class=n>AssistantAgent</span><span class=p>,</span> <span class=n>SocietyOfMindAgent</span>
+</span></span><span class=line><span class=cl>        <span class=kn>from</span> <span class=nn>autogen_ext.models.openai</span> <span class=kn>import</span> <span class=n>OpenAIChatCompletionClient</span>
+</span></span><span class=line><span class=cl>        <span class=kn>from</span> <span class=nn>autogen_agentchat.teams</span> <span class=kn>import</span> <span class=n>RoundRobinGroupChat</span>
+</span></span><span class=line><span class=cl>        <span class=kn>from</span> <span class=nn>autogen_agentchat.conditions</span> <span class=kn>import</span> <span class=n>TextMentionTermination</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>async</span> <span class=k>def</span> <span class=nf>main</span><span class=p>()</span> <span class=o>-&gt;</span> <span class=kc>None</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>            <span class=n>model_client</span> <span class=o>=</span> <span class=n>OpenAIChatCompletionClient</span><span class=p>(</span><span class=n>model</span><span class=o>=</span><span class=s2>&#34;gpt-4o&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>            <span class=n>agent1</span> <span class=o>=</span> <span class=n>AssistantAgent</span><span class=p>(</span><span class=s2>&#34;assistant1&#34;</span><span class=p>,</span> <span class=n>model_client</span><span class=o>=</span><span class=n>model_client</span><span class=p>,</span> <span class=n>system_message</span><span class=o>=</span><span class=s2>&#34;You are a writer, write well.&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>            <span class=n>agent2</span> <span class=o>=</span> <span class=n>AssistantAgent</span><span class=p>(</span>
+</span></span><span class=line><span class=cl>                <span class=s2>&#34;assistant2&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>                <span class=n>model_client</span><span class=o>=</span><span class=n>model_client</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>                <span class=n>system_message</span><span class=o>=</span><span class=s2>&#34;You are an editor, provide critical feedback. Respond with &#39;APPROVE&#39; if the text addresses all feedbacks.&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>            <span class=p>)</span>
+</span></span><span class=line><span class=cl>            <span class=n>inner_termination</span> <span class=o>=</span> <span class=n>TextMentionTermination</span><span class=p>(</span><span class=s2>&#34;APPROVE&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>            <span class=n>inner_team</span> <span class=o>=</span> <span class=n>RoundRobinGroupChat</span><span class=p>([</span><span class=n>agent1</span><span class=p>,</span> <span class=n>agent2</span><span class=p>],</span> <span class=n>termination_condition</span><span class=o>=</span><span class=n>inner_termination</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>            <span class=n>society_of_mind_agent</span> <span class=o>=</span> <span class=n>SocietyOfMindAgent</span><span class=p>(</span><span class=s2>&#34;society_of_mind&#34;</span><span class=p>,</span> <span class=n>team</span><span class=o>=</span><span class=n>inner_team</span><span class=p>,</span> <span class=n>model_client</span><span class=o>=</span><span class=n>model_client</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>            <span class=n>agent3</span> <span class=o>=</span> <span class=n>AssistantAgent</span><span class=p>(</span>
+</span></span><span class=line><span class=cl>                <span class=s2>&#34;assistant3&#34;</span><span class=p>,</span> <span class=n>model_client</span><span class=o>=</span><span class=n>model_client</span><span class=p>,</span> <span class=n>system_message</span><span class=o>=</span><span class=s2>&#34;Translate the text to Spanish.&#34;</span>
+</span></span><span class=line><span class=cl>            <span class=p>)</span>
+</span></span><span class=line><span class=cl>            <span class=n>team</span> <span class=o>=</span> <span class=n>RoundRobinGroupChat</span><span class=p>([</span><span class=n>society_of_mind_agent</span><span class=p>,</span> <span class=n>agent3</span><span class=p>],</span> <span class=n>max_turns</span><span class=o>=</span><span class=mi>2</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>            <span class=n>stream</span> <span class=o>=</span> <span class=n>team</span><span class=o>.</span><span class=n>run_stream</span><span class=p>(</span><span class=n>task</span><span class=o>=</span><span class=s2>&#34;Write a short story with a surprising ending.&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>            <span class=k>await</span> <span class=n>Console</span><span class=p>(</span><span class=n>stream</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=n>asyncio</span><span class=o>.</span><span class=n>run</span><span class=p>(</span><span class=n>main</span><span class=p>())</span>
+</span></span></code></pre></td></tr></table></div></div><p>In this example, the society of mind agent holds two agents: assistant1(writer) and assistant2(editor). The two assistants are the basic text generation agents.</p><p>A round robin group chat is used to switch between the two agents. A termination message is added to the group chat to stop the conversation when the editor approves the text. If there is no termination message defined, the conversation will continue indefinitely. This group chat is what we call the team that used by SocietyOfMindAgent.<br>The society of mind agent is in fact an agent that process all the discussions generated by the group chat. And it comes with an instruction to wrap the discussion with a response prompt to generate a response based on the discussion.<br>The default instruction is:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>Earlier you were asked to fulfill a request. 
+</span></span><span class=line><span class=cl>You and your team worked diligently to address that request. 
+</span></span><span class=line><span class=cl>Here is a transcript of that conversation: 
+</span></span><span class=line><span class=cl>{conversation}&#34;
+</span></span></code></pre></td></tr></table></div></div><p>The default response prompt is:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>Output a standalone response to the original request, without mentioning any of the intermediate discussion.
+</span></span></code></pre></td></tr></table></div></div><p>Finally the the society of mind agent is added to the group chat as a single agent to generate the final response.</p><p>To summary, the society of mind is the representative of a group of agents to generate the final response.</p><h2 id=the-experiment>The experiment</h2><p>My case is a lot simpler than the example above. I just need to translate a text and make it validate by a judge. It could be a multi-turn translate and refine iteration. If the judge approves the translation, the conversation stops and the society of mind agent will generate the final response which is the translation.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span><span class=lnt>43
+</span><span class=lnt>44
+</span><span class=lnt>45
+</span><span class=lnt>46
+</span><span class=lnt>47
+</span><span class=lnt>48
+</span><span class=lnt>49
+</span><span class=lnt>50
+</span><span class=lnt>51
+</span><span class=lnt>52
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=line><span class=cl><span class=kn>import</span> <span class=nn>asyncio</span>
+</span></span><span class=line><span class=cl><span class=kn>from</span> <span class=nn>autogen_agentchat.ui</span> <span class=kn>import</span> <span class=n>Console</span>
+</span></span><span class=line><span class=cl><span class=kn>from</span> <span class=nn>autogen_agentchat.agents</span> <span class=kn>import</span> <span class=n>AssistantAgent</span><span class=p>,</span> <span class=n>SocietyOfMindAgent</span>
+</span></span><span class=line><span class=cl><span class=kn>from</span> <span class=nn>autogen_ext.models.openai</span> <span class=kn>import</span> <span class=n>OpenAIChatCompletionClient</span>
+</span></span><span class=line><span class=cl><span class=kn>from</span> <span class=nn>autogen_agentchat.teams</span> <span class=kn>import</span> <span class=n>RoundRobinGroupChat</span>
+</span></span><span class=line><span class=cl><span class=kn>from</span> <span class=nn>autogen_agentchat.conditions</span> <span class=kn>import</span> <span class=n>TextMentionTermination</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>async</span> <span class=k>def</span> <span class=nf>main</span><span class=p>()</span> <span class=o>-&gt;</span> <span class=kc>None</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>    <span class=n>model_client</span> <span class=o>=</span> <span class=n>OpenAIChatCompletionClient</span><span class=p>(</span>
+</span></span><span class=line><span class=cl>        <span class=n>model</span><span class=o>=</span><span class=s2>&#34;qwen2.5:7b&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>        <span class=n>api_key</span><span class=o>=</span><span class=s2>&#34;ff&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>        <span class=n>base_url</span><span class=o>=</span><span class=s2>&#34;http://192.168.88.251:11434/v1&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>        <span class=n>model_capabilities</span><span class=o>=</span><span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=s2>&#34;vision&#34;</span><span class=p>:</span> <span class=kc>False</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>            <span class=s2>&#34;function_calling&#34;</span><span class=p>:</span> <span class=kc>False</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>            <span class=s2>&#34;json_output&#34;</span><span class=p>:</span> <span class=kc>True</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>        <span class=p>},</span>
+</span></span><span class=line><span class=cl>    <span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=n>translator</span> <span class=o>=</span> <span class=n>AssistantAgent</span><span class=p>(</span>
+</span></span><span class=line><span class=cl>        <span class=s2>&#34;translator&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>        <span class=n>model_client</span><span class=o>=</span><span class=n>model_client</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>        <span class=n>system_message</span><span class=o>=</span><span class=s2>&#34;You are a translator good at translating texts. You translate the text with faithfulness to the original text.&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=p>)</span>
+</span></span><span class=line><span class=cl>    
+</span></span><span class=line><span class=cl>    <span class=n>translator_reviewer</span> <span class=o>=</span> <span class=n>AssistantAgent</span><span class=p>(</span>
+</span></span><span class=line><span class=cl>        <span class=s2>&#34;translator_reviewer&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>        <span class=n>model_client</span><span class=o>=</span><span class=n>model_client</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>        <span class=n>system_message</span><span class=o>=</span><span class=s2>&#34;You are a reviewer good at reviewing translations. You review the translation for faithfulness, grammar and naming consistency. You provide feedback for the translation. Respond with &#39;APPROVE&#39; if the translation meets all the requirements.&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=n>translation_termination</span> <span class=o>=</span> <span class=n>TextMentionTermination</span><span class=p>(</span><span class=s2>&#34;APPROVE&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=n>translation_team</span> <span class=o>=</span> <span class=n>RoundRobinGroupChat</span><span class=p>(</span>
+</span></span><span class=line><span class=cl>        <span class=p>[</span><span class=n>translator</span><span class=p>,</span> <span class=n>translator_reviewer</span><span class=p>],</span> <span class=n>termination_condition</span><span class=o>=</span><span class=n>translation_termination</span><span class=p>,</span> <span class=n>max_turns</span><span class=o>=</span><span class=mi>3</span>
+</span></span><span class=line><span class=cl>    <span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=n>response_prompt</span> <span class=o>=</span> <span class=s2>&#34;Output a standalone translation to the original request, without mentioning any of the intermediate discussion and the APPROVE message&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=n>society_of_mind_agent</span> <span class=o>=</span> <span class=n>SocietyOfMindAgent</span><span class=p>(</span>
+</span></span><span class=line><span class=cl>        <span class=s2>&#34;society_of_mind&#34;</span><span class=p>,</span> <span class=n>team</span><span class=o>=</span><span class=n>translation_team</span><span class=p>,</span> <span class=n>model_client</span><span class=o>=</span><span class=n>model_client</span><span class=p>,</span> <span class=n>response_prompt</span><span class=o>=</span><span class=n>response_prompt</span>
+</span></span><span class=line><span class=cl>    <span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=n>task</span> <span class=o>=</span> <span class=s2>&#34;&#34;&#34;
+</span></span></span><span class=line><span class=cl><span class=s2>    Translate the following text to English:
+</span></span></span><span class=line><span class=cl><span class=s2>    ### 
+</span></span></span><span class=line><span class=cl><span class=s2>    Si vous arrêtez d&#39;utiliser REFRESH, collyre en récipient unidose
+</span></span></span><span class=line><span class=cl><span class=s2>    ### 
+</span></span></span><span class=line><span class=cl><span class=s2>    &#34;&#34;&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=n>stream</span> <span class=o>=</span> <span class=n>society_of_mind_agent</span><span class=o>.</span><span class=n>run_stream</span><span class=p>(</span><span class=n>task</span><span class=o>=</span><span class=n>task</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=n>result</span> <span class=o>=</span> <span class=k>await</span> <span class=n>Console</span><span class=p>(</span><span class=n>stream</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=n>result</span><span class=o>.</span><span class=n>messages</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>if</span> <span class=vm>__name__</span> <span class=o>==</span> <span class=s2>&#34;__main__&#34;</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>    <span class=n>result</span> <span class=o>=</span> <span class=n>asyncio</span><span class=o>.</span><span class=n>run</span><span class=p>(</span><span class=n>main</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>    <span class=nb>print</span><span class=p>(</span><span class=s2>&#34;-----------------&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>    <span class=nb>print</span><span class=p>(</span><span class=n>result</span><span class=p>[</span><span class=o>-</span><span class=mi>1</span><span class=p>]</span><span class=o>.</span><span class=n>content</span><span class=p>)</span>
+</span></span></code></pre></td></tr></table></div></div><p>The above code is a simple translation service with a judge. The translation team holds two agents: translator and translator_reviewer. The conversation will stop when the reviewer approves the translation. The society of mind agent will generate the final response which is the translation.<br>My model is way smaller than the example. At the beginning, I used the Qwen2.5 1.5B model to translate the text. It works well most of the time. However, the translation is not consistent all the time and it will add some extra info that doesn&rsquo;t exist in the original text. Much worse, the judge failed to spot the problem and approve the wrong translation. The 3B model failed to achieve the consistency and the judge process. At the end, I stopped the experiment at the 7B model. The model can generate the translation with high quality and the judge can spot the problem and approve the translation.<br>However, it works as expected with minor changes. I changed the response prompt to only output the translation without mentioning the intermediate discussion and the APPROVE message. With the original response prompt, the final response contains the &ldquo;APPROVE&rdquo; message.</p><p>The final response is:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>---------- user ----------
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    Translate the following text to English:
+</span></span><span class=line><span class=cl>    ### 
+</span></span><span class=line><span class=cl>    Si vous arrêtez d&#39;utiliser REFRESH, collyre en récipient unidose
+</span></span><span class=line><span class=cl>    ### 
+</span></span><span class=line><span class=cl>    
+</span></span><span class=line><span class=cl>---------- translator ----------
+</span></span><span class=line><span class=cl>If you stop using REFRESH, one-dose eye drops
+</span></span><span class=line><span class=cl>[Prompt tokens: 69, Completion tokens: 13]
+</span></span><span class=line><span class=cl>---------- translator_reviewer ----------
+</span></span><span class=line><span class=cl>APPROVE
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>The provided translation is accurate and conveys the meaning of the original French text correctly. It uses appropriate English terminology for &#34;REFRESH&#34; (presumably a product name) and properly translates &#34;collyre en récipient unidose&#34; to &#34;one-dose eye drops.&#34; The sentence structure is clear and grammatically correct in English.
+</span></span><span class=line><span class=cl>[Prompt tokens: 105, Completion tokens: 74]
+</span></span><span class=line><span class=cl>---------- society_of_mind ----------
+</span></span><span class=line><span class=cl>If you stop using REFRESH, one-dose eye drops
+</span></span><span class=line><span class=cl>[Prompt tokens: 148, Completion tokens: 13]
+</span></span><span class=line><span class=cl>---------- Summary ----------
+</span></span><span class=line><span class=cl>Number of messages: 4
+</span></span><span class=line><span class=cl>Finish reason: None
+</span></span><span class=line><span class=cl>Total prompt tokens: 322
+</span></span><span class=line><span class=cl>Total completion tokens: 100
+</span></span><span class=line><span class=cl>Duration: 2.78 seconds
+</span></span><span class=line><span class=cl>-----------------
+</span></span><span class=line><span class=cl>If you stop using REFRESH, one-dose eye drops
+</span></span></code></pre></td></tr></table></div></div><p>A second example:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span><span class=lnt>43
+</span><span class=lnt>44
+</span><span class=lnt>45
+</span><span class=lnt>46
+</span><span class=lnt>47
+</span><span class=lnt>48
+</span><span class=lnt>49
+</span><span class=lnt>50
+</span><span class=lnt>51
+</span><span class=lnt>52
+</span><span class=lnt>53
+</span><span class=lnt>54
+</span><span class=lnt>55
+</span><span class=lnt>56
+</span><span class=lnt>57
+</span><span class=lnt>58
+</span><span class=lnt>59
+</span><span class=lnt>60
+</span><span class=lnt>61
+</span><span class=lnt>62
+</span><span class=lnt>63
+</span><span class=lnt>64
+</span><span class=lnt>65
+</span><span class=lnt>66
+</span><span class=lnt>67
+</span><span class=lnt>68
+</span><span class=lnt>69
+</span><span class=lnt>70
+</span><span class=lnt>71
+</span><span class=lnt>72
+</span><span class=lnt>73
+</span><span class=lnt>74
+</span><span class=lnt>75
+</span><span class=lnt>76
+</span><span class=lnt>77
+</span><span class=lnt>78
+</span><span class=lnt>79
+</span><span class=lnt>80
+</span><span class=lnt>81
+</span><span class=lnt>82
+</span><span class=lnt>83
+</span><span class=lnt>84
+</span><span class=lnt>85
+</span><span class=lnt>86
+</span><span class=lnt>87
+</span><span class=lnt>88
+</span><span class=lnt>89
+</span><span class=lnt>90
+</span><span class=lnt>91
+</span><span class=lnt>92
+</span><span class=lnt>93
+</span><span class=lnt>94
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>---------- user ----------
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    Translate the following text to English:
+</span></span><span class=line><span class=cl>    ###
+</span></span><span class=line><span class=cl>    Faites attention avec DOLIPRANE 100 mg :
+</span></span><span class=line><span class=cl>· Si la douleur persiste plus de 5 jours, ou la fièvre plus de 3 jours, ou en cas d’efficacité insuffisante ou de survenue de tout autre signe, ne continuez pas le traitement sans l’avis de votre médecin.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>· La prise de paracétamol peut entraîner des troubles du fonctionnement du foie.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>· Vous devez demander l’avis de votre médecin avant de donner ce médicament à votre enfant :
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>· s’il a une maladie du foie ou une maladie grave des reins,
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>· s’il souffre de déshydratation,
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>· s’il souffre par exemple de malnutrition chronique, s’il est en période de jeûne, s’il a perdu beaucoup de poids récemment, s’il est atteint du virus du SIDA ou d’une hépatite virale chronique, s’il souffre de mucoviscidose (maladie génétique et héréditaire caractérisée notamment par des infections respiratoires graves), ou encore s’il est atteint de la maladie de Gilbert (maladie héréditaire associée à une augmentation du taux de bilirubine dans le sang),
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>· si votre enfant est allergique à l’aspirine et/ou aux anti-inflammatoires non stéroïdiens.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>· À titre informatif : la consommation de boissons alcoolisées pendant le traitement est déconseillée. En cas de sevrage récent d’un alcoolisme chronique, le risque d’atteinte hépatique est majoré
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>· En cas d’administration chez un enfant, la dose dépend de son poids (voir rubrique « Comment utiliser DOLIPRANE 100 mg, suppositoire sécable ? »).
+</span></span><span class=line><span class=cl>###
+</span></span><span class=line><span class=cl>    
+</span></span><span class=line><span class=cl>---------- translator ----------
+</span></span><span class=line><span class=cl>Be careful when using DOLIPRANE 100 mg:
+</span></span><span class=line><span class=cl>- If pain persists for more than 5 days or fever for more than 3 days, or if the medication is not effective or other symptoms appear, do not continue treatment without your doctor&#39;s advice.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>- Taking paracetamol can cause liver function problems.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>- Before giving this medicine to your child, consult your doctor:
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>- If he has a liver disease or serious kidney illness,
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>- If he suffers from dehydration,
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>- For example, if he is chronically malnourished, fasting, has recently lost significant weight, has the HIV virus or chronic viral hepatitis, has mucoviscidosis (a genetic hereditary condition characterized by severe respiratory infections), or suffers from Gilbert&#39;s syndrome (a hereditary disease associated with increased bilirubin levels in the blood),
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>- If your child is allergic to aspirin and/or nonsteroidal anti-inflammatory drugs.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>- For information: Alcoholic beverages should be avoided during treatment. The risk of liver damage after chronic alcoholism withdrawal is increased.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>- When administering to a child, the dose depends on his weight (see &#34;How to use DOLIPRANE 100 mg, cuttable suppository?&#34; section).
+</span></span><span class=line><span class=cl>[Prompt tokens: 464, Completion tokens: 254]
+</span></span><span class=line><span class=cl>---------- translator_reviewer ----------
+</span></span><span class=line><span class=cl>APPROVE
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>The translation accurately conveys all the information from the original text. It maintains the correct medical terminology and warning messages pertinent to using DOLIPRANE 100 mg responsibly. The sentence structure in English matches the intended meaning effectively while also ensuring that it is understandable to the target audience. Naming consistency has been preserved, and there are no grammatical errors noted within the provided translation.
+</span></span><span class=line><span class=cl>[Prompt tokens: 740, Completion tokens: 83]
+</span></span><span class=line><span class=cl>---------- society_of_mind ----------
+</span></span><span class=line><span class=cl>Be careful when using DOLIPRANE 100 mg:
+</span></span><span class=line><span class=cl>- If pain persists for more than 5 days or fever for more than 3 days, or if the medication is not effective or other symptoms appear, do not continue treatment without your doctor&#39;s advice.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>- Taking paracetamol can cause liver function problems.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>- Before giving this medicine to your child, consult your doctor:
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>- If he has a liver disease or serious kidney illness,
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>- If he suffers from dehydration,
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>- For example, if he is chronically malnourished, fasting, has recently lost significant weight, has the HIV virus or chronic viral hepatitis, has mucoviscidosis (a genetic hereditary condition characterized by severe respiratory infections), or suffers from Gilbert&#39;s syndrome (a hereditary disease associated with increased bilirubin levels in the blood),
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>- If your child is allergic to aspirin and/or nonsteroidal anti-inflammatory drugs.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>- For information: Alcoholic beverages should be avoided during treatment. The risk of liver damage after chronic alcoholism withdrawal is increased.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>- When administering to a child, the dose depends on his weight (see &#34;How to use DOLIPRANE 100 mg, cuttable suppository?&#34; section).
+</span></span><span class=line><span class=cl>[Prompt tokens: 397, Completion tokens: 254]
+</span></span><span class=line><span class=cl>---------- Summary ----------
+</span></span><span class=line><span class=cl>Number of messages: 4
+</span></span><span class=line><span class=cl>Finish reason: None
+</span></span><span class=line><span class=cl>Total prompt tokens: 1601
+</span></span><span class=line><span class=cl>Total completion tokens: 591
+</span></span><span class=line><span class=cl>Duration: 19.30 seconds
+</span></span><span class=line><span class=cl>-----------------
+</span></span><span class=line><span class=cl>Be careful when using DOLIPRANE 100 mg:
+</span></span><span class=line><span class=cl>- If pain persists for more than 5 days or fever for more than 3 days, or if the medication is not effective or other symptoms appear, do not continue treatment without your doctor&#39;s advice.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>- Taking paracetamol can cause liver function problems.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>- Before giving this medicine to your child, consult your doctor:
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>- If he has a liver disease or serious kidney illness,
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>- If he suffers from dehydration,
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>- For example, if he is chronically malnourished, fasting, has recently lost significant weight, has the HIV virus or chronic viral hepatitis, has mucoviscidosis (a genetic hereditary condition characterized by severe respiratory infections), or suffers from Gilbert&#39;s syndrome (a hereditary disease associated with increased bilirubin levels in the blood),
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>- If your child is allergic to aspirin and/or nonsteroidal anti-inflammatory drugs.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>- For information: Alcoholic beverages should be avoided during treatment. The risk of liver damage after chronic alcoholism withdrawal is increased.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>- When administering to a child, the dose depends on his weight (see &#34;How to use DOLIPRANE 100 mg, cuttable suppository?&#34; section).
+</span></span></code></pre></td></tr></table></div></div><h2 id=final-thoughts>Final thoughts</h2><p>I had a lot of fun with this agent. In this very short exploration, I didn&rsquo;t make sure the the society of mind at the end can generate a consistent response but only the inner team.<br>The agent is somehow overkill for this use case. Most of the time, we can expect the model to output very good translation even with the 1.5B model. The judge can be more useful if the we provide much more context to the translation: for example, the domain of the text, the target audience, etc.<br>There are still a lot of things to explore with the agent. For example, I can add more agents to the society of mind agent to generate the final response. Or I can make the judge to vote instead of approve the translation to make the final translation more reliable.<br>This kind of generation by debate is very powerful. There are apps with a whole IT company built with agents this way like <a class=link href=https://github.com/OpenBMB/ChatDev target=_blank rel=noopener>ChatDev</a>. It is a very interesting approach to generate the final response.<br>I will try to make a more complex agent in the future with other use cases.</p><h2 id=references>References</h2><ul><li><a class=link href=https://arxiv.org/abs/2305.14325 target=_blank rel=noopener>Improving Factuality and Reasoning in Language Models through Multiagent Debate</a></li><li><a class=link href=https://microsoft.github.io/autogen/0.2/docs/notebooks/agentchat_society_of_mind/ target=_blank rel=noopener>SocietyOfMindAgent</a></li></ul></section><footer class=article-footer><section class=article-tags><a href=/tags/llm/>LLM</a>
+<a href=/tags/translation/>Translation</a>
+<a href=/tags/qwen/>Qwen</a>
+<a href=/tags/agent/>Agent</a>
+<a href=/tags/autogen/>Autogen</a></section></footer></article><div class=disqus-container><div id=disqus_thread></div><script>window.disqus_config=function(){},function(){if(["localhost","127.0.0.1"].indexOf(window.location.hostname)!=-1){document.getElementById("disqus_thread").innerHTML="Disqus comments not available by default when the website is previewed locally.";return}var t=document,e=t.createElement("script");e.async=!0,e.src="//hugo-theme-stack.disqus.com/embed.js",e.setAttribute("data-timestamp",+new Date),(t.head||t.body).appendChild(e)}()</script><noscript>Please enable JavaScript to view the <a href=https://disqus.com/?ref_noscript>comments powered by Disqus.</a></noscript><a href=https://disqus.com class=dsq-brlink>comments powered by <span class=logo-disqus>Disqus</span></a></div><style>.disqus-container{background-color:var(--card-background);border-radius:var(--card-border-radius);box-shadow:var(--shadow-l1);padding:var(--card-padding)}</style><script>window.addEventListener("onColorSchemeChange",e=>{typeof DISQUS=="object"&&DISQUS.reset({reload:!0})})</script><footer class=site-footer><section class=copyright>&copy;
+2023 -
+2025 Haoxian's Blog</section><section class=powerby>Built with <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a><br>Theme <b><a href=https://github.com/CaiJimmy/hugo-theme-stack target=_blank rel=noopener data-version=3.33.0>Stack</a></b> designed by <a href=https://jimmycai.com target=_blank rel=noopener>Jimmy</a></section></footer><div class=pswp tabindex=-1 role=dialog aria-hidden=true><div class=pswp__bg></div><div class=pswp__scroll-wrap><div class=pswp__container><div class=pswp__item></div><div class=pswp__item></div><div class=pswp__item></div></div><div class="pswp__ui pswp__ui--hidden"><div class=pswp__top-bar><div class=pswp__counter></div><button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+<button class="pswp__button pswp__button--share" title=Share></button>
+<button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+<button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button><div class=pswp__preloader><div class=pswp__preloader__icn><div class=pswp__preloader__cut><div class=pswp__preloader__donut></div></div></div></div></div><div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap"><div class=pswp__share-tooltip></div></div><button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+</button>
+<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)"></button><div class=pswp__caption><div class=pswp__caption__center></div></div></div></div></div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css crossorigin=anonymous></main></div><script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z+KMkF24hUW8WePSA9HM=" crossorigin=anonymous></script><script type=text/javascript src=/ts/main.c922af694cc257bf1ecc41c0dd7b0430f9114ec280ccf67cd2c6ad55f5316c4e.js defer></script><script>(function(){const e=document.createElement("link");e.href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap",e.type="text/css",e.rel="stylesheet",document.head.appendChild(e)})()</script></body></html>

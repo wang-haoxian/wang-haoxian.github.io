@@ -1,0 +1,789 @@
+<!doctype html><html lang=en-us dir=ltr><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><meta name=description content="Deploy the easiest example of k8s using K3D"><title>[K8S] Use K3D to implement the first service</title><link rel=canonical href=https://www.haoxian.icu/p/k8s-use-k3d-to-implement-the-first-service/><link rel=stylesheet href=/scss/style.min.833d6eed45de56f48306bf57268d5b8cdfc8a60e8e7bdc99810464fcd033f7c6.css><meta property='og:title' content="[K8S] Use K3D to implement the first service"><meta property='og:description' content="Deploy the easiest example of k8s using K3D"><meta property='og:url' content='https://www.haoxian.icu/p/k8s-use-k3d-to-implement-the-first-service/'><meta property='og:site_name' content="Haoxian's Blog"><meta property='og:type' content='article'><meta property='article:section' content='Post'><meta property='article:tag' content='K3D'><meta property='article:tag' content='K8S'><meta property='article:tag' content='Kubernetes'><meta property='article:tag' content='Docker'><meta property='article:published_time' content='2023-03-11T11:00:06+09:00'><meta property='article:modified_time' content='2023-03-11T11:00:06+09:00'><meta name=twitter:title content="[K8S] Use K3D to implement the first service"><meta name=twitter:description content="Deploy the easiest example of k8s using K3D"><link rel="shortcut icon" href=/favicon.svg></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label="Toggle Menu">
+<span class=hamburger-box><span class=hamburger-inner></span></span></button><header><figure class=site-avatar><a href=/><img src=/img/avatar_hu_a8dd701257cc3205.jpg width=300 height=400 class=site-logo loading=lazy alt=Avatar></a></figure><div class=site-meta><h1 class=site-name><a href=/>Haoxian's Blog</a></h1><h2 class=site-description>From NLP to MLOps and LLM</h2></div></header><ol class=menu-social><li><a href=https://github.com/wang-haoxian target=_blank title=GitHub rel=me><svg class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6.0 00-1.3-3.2 4.2 4.2.0 00-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3.0 00-6.2.0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2.0 00-.1 3.2A4.6 4.6.0 004 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg></a></li></ol><ol class=menu id=main-menu><li><a href=/><svg class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="5 12 3 12 12 3 21 12 19 12"/><path d="M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/><path d="M9 21v-6a2 2 0 012-2h2a2 2 0 012 2v6"/></svg>
+<span>Home</span></a></li><li><a href=/archives/><svg class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><rect x="3" y="4" width="18" height="4" rx="2"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+<span>Archives</span></a></li><li><a href=/search/><svg class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>
+<span>Search</span></a></li><li><a href=/links/><svg class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M10 14a3.5 3.5.0 005 0l4-4a3.5 3.5.0 00-5-5l-.5.5"/><path d="M14 10a3.5 3.5.0 00-5 0l-4 4a3.5 3.5.0 005 5l.5-.5"/></svg>
+<span>Links</span></a></li><li class=menu-bottom-section><ol class=menu><li id=dark-mode-toggle><svg class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="8" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
+<svg class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="16" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
+<span>Dark Mode</span></li></ol></li></ol></aside><aside class="sidebar right-sidebar sticky"><section class="widget archives"><div class=widget-icon><svg class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg></div><h2 class="widget-title section-title">Table of contents</h2><div class=widget--toc><nav id=TableOfContents><ol><li><a href=#get-your-hands-dirty-with-k3d>Get your hands dirty with K3D</a></li><li><a href=#whats-in-this-guestbook-application>What&rsquo;s in this Guestbook application</a></li><li><a href=#before-deployment>Before deployment</a></li><li><a href=#redis-deployment>Redis deployment</a><ol><li><a href=#the-redis-leader>The Redis leader</a><ol><li><a href=#deployment>Deployment</a></li><li><a href=#service>Service</a></li></ol></li><li><a href=#the-redis-follower>The redis follower</a><ol><li><a href=#deployment-1>Deployment</a></li><li><a href=#service-1>Service</a></li></ol></li></ol></li><li><a href=#frontend>Frontend</a><ol><li><a href=#deployment-2>Deployment</a></li><li><a href=#service-2>Service</a></li></ol></li><li><a href=#test-our-application>Test our application</a></li><li><a href=#scale-the-frontend>Scale the frontend</a><ol><li><a href=#scale-up>Scale up</a></li><li><a href=#scale-down>Scale down</a></li></ol></li><li><a href=#expose-the-service>Expose the service</a><ol><li><a href=#using-nodeport>Using NodePort</a></li><li><a href=#using-ingress>Using Ingress</a></li></ol></li><li><a href=#clean-up>Clean up</a></li><li><a href=#references>References</a></li></ol></nav></div></section></aside><main class="main full-width"><article class=main-article><header class=article-header><div class=article-details><div class=article-title-wrapper><h2 class=article-title><a href=/p/k8s-use-k3d-to-implement-the-first-service/>[K8S] Use K3D to implement the first service</a></h2><h3 class=article-subtitle>Deploy the easiest example of k8s using K3D</h3></div><footer class=article-time><div><svg class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
+<time class=article-time--published datetime=2023-03-11T11:00:06+09:00>Mar 11, 2023</time></div><div><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<time class=article-time--reading>11 minute read</time></div></footer></div></header><section class=article-content><h2 id=get-your-hands-dirty-with-k3d>Get your hands dirty with K3D</h2><p>Now that we have a running cluster creating by K3D, it&rsquo;s time to make our very first service.<br>The example that I chosen was from <a class=link href=https://github.com/nigelpoulton/k8s-sample-apps target=_blank rel=noopener>https://github.com/nigelpoulton/k8s-sample-apps</a> (A more PC example can be found from <a class=link href=https://kubernetes.io/docs/tutorials/stateless-application/guestbook/ target=_blank rel=noopener>https://kubernetes.io/docs/tutorials/stateless-application/guestbook/</a>)
+This repo proposed several example apps, and this is the simplest one.</p><div class=table-wrapper><table><thead><tr><th>Name</th><th>Description</th><th>Notable Features Used</th><th>Complexity Level</th></tr></thead><tbody><tr><td><a class=link href=guestbook/>Guestbook</a></td><td>PHP app with Redis</td><td>Deployment, Service</td><td>Beginner</td></tr><tr><td><a class=link href=mysql-wordpress-pd/>WordPress</a></td><td>WordPress with MySQL</td><td>Deployment, Persistent Volume with Claim</td><td>Beginner</td></tr><tr><td><a class=link href=cassandra/>Cassandra</a></td><td>Cloud Native Cassandra</td><td>Daemon Set, Stateful Set, Replication Controller</td><td>Intermediate</td></tr></tbody></table></div><h2 id=whats-in-this-guestbook-application>What&rsquo;s in this Guestbook application</h2><p>This is an PHP application which allows register strings.
+It looks like this <img src=/p/k8s-use-k3d-to-implement-the-first-service/guestbook.png width=2646 height=448 srcset="/p/k8s-use-k3d-to-implement-the-first-service/guestbook_hu_8a2993a551770674.png 480w, /p/k8s-use-k3d-to-implement-the-first-service/guestbook_hu_b6a4c734bcffccfe.png 1024w" loading=lazy class=gallery-image data-flex-grow=590 data-flex-basis=1417px><br>The string will then be kept in a mini Redis cluster.</p><p>In the actual deployment, there are a frontend and a Redis cluster consisted with a leader and a follower.</p><h2 id=before-deployment>Before deployment</h2><p>Let&rsquo;s prepare for the deployment with a dedicated namespace. I find this a nice practice before deployment a group of depending services.<br>This allows us to manage the ACL, etc much more easily lately.<br>To create a namespace named <code>guestbook</code>, we use</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>kubectl create namespace guestbook
+</span></span></code></pre></td></tr></table></div></div><p>Then switch the context to use this namespace by defaut:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>kubectl config set-context --current --namespace guestbook
+</span></span></code></pre></td></tr></table></div></div><p>At the next steps, we will be able to work in this namespace with dedicated informations(pods, deployments, services, etc) for this tutorial.</p><h2 id=redis-deployment>Redis deployment</h2><h3 id=the-redis-leader>The Redis leader</h3><h4 id=deployment>Deployment</h4><p>To begin with the Redis part, we will create a redis leader by using this file <code>redis-leader-deployment.yaml</code></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl><span class=c># SOURCE: https://cloud.google.com/kubernetes-engine/docs/tutorials/guestbook</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>apiVersion</span><span class=p>:</span><span class=w> </span><span class=l>apps/v1</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>kind</span><span class=p>:</span><span class=w> </span><span class=l>Deployment</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>metadata</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>redis-leader</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>labels</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>app</span><span class=p>:</span><span class=w> </span><span class=l>redis</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>role</span><span class=p>:</span><span class=w> </span><span class=l>leader</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>tier</span><span class=p>:</span><span class=w> </span><span class=l>backend</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>spec</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>replicas</span><span class=p>:</span><span class=w> </span><span class=m>1</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>selector</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>matchLabels</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>app</span><span class=p>:</span><span class=w> </span><span class=l>redis</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>template</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>metadata</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>labels</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>app</span><span class=p>:</span><span class=w> </span><span class=l>redis</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>role</span><span class=p>:</span><span class=w> </span><span class=l>leader</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>tier</span><span class=p>:</span><span class=w> </span><span class=l>backend</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>spec</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>containers</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>leader</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>image</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;docker.io/redis:6.0.5&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>resources</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>          </span><span class=nt>requests</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=nt>cpu</span><span class=p>:</span><span class=w> </span><span class=l>100m</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=nt>memory</span><span class=p>:</span><span class=w> </span><span class=l>100Mi</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>ports</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span>- <span class=nt>containerPort</span><span class=p>:</span><span class=w> </span><span class=m>6379</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><p>Then type in your terminal with <code>kubectl apply -f redis-leader-deployment.yaml</code> to politely ask our K3D cluster to deploy it.<br>Then checkout the pods with <code>kubectl get pods</code><br>Then you will see the pod is creating</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>NAME                           READY   STATUS              RESTARTS   AGE
+</span></span><span class=line><span class=cl>redis-leader-857d99cc8-8dtr4   0/1     ContainerCreating   <span class=m>0</span>          6s
+</span></span></code></pre></td></tr></table></div></div><p>A few moments later, we will see that the pod is ready</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>NAME                           READY   STATUS    RESTARTS   AGE
+</span></span><span class=line><span class=cl>redis-leader-857d99cc8-8dtr4   1/1     Running   <span class=m>0</span>          15s
+</span></span></code></pre></td></tr></table></div></div><h4 id=service>Service</h4><p>A deployment always comes with a service for access the pods wisely.
+Create this file to make the service for our redis leader <code>redis-leader-service.yaml</code></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl><span class=c># SOURCE: https://cloud.google.com/kubernetes-engine/docs/tutorials/guestbook</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>apiVersion</span><span class=p>:</span><span class=w> </span><span class=l>v1</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>kind</span><span class=p>:</span><span class=w> </span><span class=l>Service</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>metadata</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>redis-leader</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>labels</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>app</span><span class=p>:</span><span class=w> </span><span class=l>redis</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>role</span><span class=p>:</span><span class=w> </span><span class=l>leader</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>tier</span><span class=p>:</span><span class=w> </span><span class=l>backend</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>spec</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>ports</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span>- <span class=nt>port</span><span class=p>:</span><span class=w> </span><span class=m>6379</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>targetPort</span><span class=p>:</span><span class=w> </span><span class=m>6379</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>selector</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>app</span><span class=p>:</span><span class=w> </span><span class=l>redis</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>role</span><span class=p>:</span><span class=w> </span><span class=l>leader</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>tier</span><span class=p>:</span><span class=w> </span><span class=l>backend</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><p>Then you can apply it with <code>kubectl apply -f redis-leader-service.yaml</code><br>Check the service with <code>kubectl get service</code></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>kubectl get services
+</span></span><span class=line><span class=cl>NAME           TYPE        CLUSTER-IP    EXTERNAL-IP   PORT<span class=o>(</span>S<span class=o>)</span>    AGE
+</span></span><span class=line><span class=cl>redis-leader   ClusterIP   10.43.18.93   &lt;none&gt;        6379/TCP   6s
+</span></span></code></pre></td></tr></table></div></div><h3 id=the-redis-follower>The redis follower</h3><h4 id=deployment-1>Deployment</h4><p>As the leader but with slightly different config.
+Let&rsquo;s create <code>redis-follower-deployment.yaml</code></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl><span class=c># SOURCE: https://cloud.google.com/kubernetes-engine/docs/tutorials/guestbook</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>apiVersion</span><span class=p>:</span><span class=w> </span><span class=l>apps/v1</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>kind</span><span class=p>:</span><span class=w> </span><span class=l>Deployment</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>metadata</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>redis-follower</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>labels</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>app</span><span class=p>:</span><span class=w> </span><span class=l>redis</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>role</span><span class=p>:</span><span class=w> </span><span class=l>follower</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>tier</span><span class=p>:</span><span class=w> </span><span class=l>backend</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>spec</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>replicas</span><span class=p>:</span><span class=w> </span><span class=m>2</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>selector</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>matchLabels</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>app</span><span class=p>:</span><span class=w> </span><span class=l>redis</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>template</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>metadata</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>labels</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>app</span><span class=p>:</span><span class=w> </span><span class=l>redis</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>role</span><span class=p>:</span><span class=w> </span><span class=l>follower</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>tier</span><span class=p>:</span><span class=w> </span><span class=l>backend</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>spec</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>containers</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>follower</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>image</span><span class=p>:</span><span class=w> </span><span class=l>gcr.io/google_samples/gb-redis-follower:v2</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>resources</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>          </span><span class=nt>requests</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=nt>cpu</span><span class=p>:</span><span class=w> </span><span class=l>100m</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=nt>memory</span><span class=p>:</span><span class=w> </span><span class=l>100Mi</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>ports</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span>- <span class=nt>containerPort</span><span class=p>:</span><span class=w> </span><span class=m>6379</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><p>We create 2 replicas for having 2 followers.<br>Apply the yaml file <code>kubectl apply -f redis-follower-deployment.yaml</code> and check the deployment with <code>kubectl get pods</code></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>NAME                           READY   STATUS              RESTARTS   AGE
+</span></span><span class=line><span class=cl>redis-leader-857d99cc8-8dtr4   1/1     Running             <span class=m>0</span>          93s
+</span></span><span class=line><span class=cl>redis-follower-9dc7f6964-mcgbn    0/1     ContainerCreating   <span class=m>0</span>          12s
+</span></span><span class=line><span class=cl>redis-follower-9dc7f6964-dpc2b    1/1     Running             <span class=m>0</span>          12s
+</span></span></code></pre></td></tr></table></div></div><h4 id=service-1>Service</h4><p>Now create the service with <code>redis-follower-service.yaml</code></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl><span class=c># SOURCE: https://cloud.google.com/kubernetes-engine/docs/tutorials/guestbook</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>apiVersion</span><span class=p>:</span><span class=w> </span><span class=l>v1</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>kind</span><span class=p>:</span><span class=w> </span><span class=l>Service</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>metadata</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>redis-follower</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>labels</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>app</span><span class=p>:</span><span class=w> </span><span class=l>redis</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>role</span><span class=p>:</span><span class=w> </span><span class=l>follower</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>tier</span><span class=p>:</span><span class=w> </span><span class=l>backend</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>spec</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>ports</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c># the port that this service should serve on</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span>- <span class=nt>port</span><span class=p>:</span><span class=w> </span><span class=m>6379</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>selector</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>app</span><span class=p>:</span><span class=w> </span><span class=l>redis</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>role</span><span class=p>:</span><span class=w> </span><span class=l>follower</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>tier</span><span class=p>:</span><span class=w> </span><span class=l>backend</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><p>Apply and check the service</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>kubectl apply -f redis-follower-service.yaml
+</span></span><span class=line><span class=cl>kubectl get service
+</span></span></code></pre></td></tr></table></div></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>NAME              TYPE        CLUSTER-IP     EXTERNAL-IP   PORT<span class=o>(</span>S<span class=o>)</span>    AGE
+</span></span><span class=line><span class=cl>redis-leader      ClusterIP   10.43.18.93    &lt;none&gt;        6379/TCP   89s
+</span></span><span class=line><span class=cl>redis-follower    ClusterIP   10.43.210.57   &lt;none&gt;        6379/TCP   29s
+</span></span></code></pre></td></tr></table></div></div><h2 id=frontend>Frontend</h2><h3 id=deployment-2>Deployment</h3><p>Now let&rsquo;s move to the frontend part.<br>This is the configuration yaml file <code>frontend-deployment.yaml</code></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl><span class=c># SOURCE: https://cloud.google.com/kubernetes-engine/docs/tutorials/guestbook</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>apiVersion</span><span class=p>:</span><span class=w> </span><span class=l>apps/v1</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>kind</span><span class=p>:</span><span class=w> </span><span class=l>Deployment</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>metadata</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>frontend</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>spec</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>replicas</span><span class=p>:</span><span class=w> </span><span class=m>3</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>selector</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>matchLabels</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>app</span><span class=p>:</span><span class=w> </span><span class=l>guestbook</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>tier</span><span class=p>:</span><span class=w> </span><span class=l>frontend</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>template</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>metadata</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>labels</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>app</span><span class=p>:</span><span class=w> </span><span class=l>guestbook</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>tier</span><span class=p>:</span><span class=w> </span><span class=l>frontend</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>spec</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>containers</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>php-redis</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>image</span><span class=p>:</span><span class=w> </span><span class=l>gcr.io/google_samples/gb-frontend:v5</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>env</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span>- <span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>GET_HOSTS_FROM</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>          </span><span class=nt>value</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;dns&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>resources</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>          </span><span class=nt>requests</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=nt>cpu</span><span class=p>:</span><span class=w> </span><span class=l>100m</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=nt>memory</span><span class=p>:</span><span class=w> </span><span class=l>100Mi</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>ports</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span>- <span class=nt>containerPort</span><span class=p>:</span><span class=w> </span><span class=m>80</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><p>Apply it with <code>kubectl apply -f frontend-deployment.yaml</code>
+Let&rsquo;s see the pods with <code>kubectl get pods -l app=guestbook -l tier=frontend</code></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>NAME                       READY   STATUS    RESTARTS   AGE
+</span></span><span class=line><span class=cl>frontend-f7d9c57d4-p9dm8   1/1     Running   <span class=m>0</span>          21s
+</span></span><span class=line><span class=cl>frontend-f7d9c57d4-vgk2v   1/1     Running   <span class=m>0</span>          21s
+</span></span><span class=line><span class=cl>frontend-f7d9c57d4-trqkm   1/1     Running   <span class=m>0</span>          21s
+</span></span></code></pre></td></tr></table></div></div><p>Since we have defined our namespace, we can alsow omit the <code>-l app=guestbook</code> which are selectors to choose the coresponding pods.</p><h3 id=service-2>Service</h3><p>Now let&rsquo;s create a service for the frontend with <code>frontend-service.yaml</code></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl><span class=c># SOURCE: https://cloud.google.com/kubernetes-engine/docs/tutorials/guestbook</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>apiVersion</span><span class=p>:</span><span class=w> </span><span class=l>v1</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>kind</span><span class=p>:</span><span class=w> </span><span class=l>Service</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>metadata</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>frontend</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>labels</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>app</span><span class=p>:</span><span class=w> </span><span class=l>guestbook</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>tier</span><span class=p>:</span><span class=w> </span><span class=l>frontend</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>spec</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=c># if your cluster supports it, uncomment the following to automatically create</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=c># an external load-balanced IP for the frontend service.</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=c># type: LoadBalancer</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=c>#type: LoadBalancer</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>ports</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c># the port that this service should serve on</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span>- <span class=nt>port</span><span class=p>:</span><span class=w> </span><span class=m>80</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>selector</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>app</span><span class=p>:</span><span class=w> </span><span class=l>guestbook</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>tier</span><span class=p>:</span><span class=w> </span><span class=l>frontend</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><p>Apply it as always <code>kubectl apply -f frontend-service.yaml</code><br>And check the service created <code>kubectl get services</code></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>NAME            TYPE        CLUSTER-IP     EXTERNAL-IP   PORT<span class=o>(</span>S<span class=o>)</span>        AGE
+</span></span><span class=line><span class=cl>redis-leader    ClusterIP   10.43.18.93    &lt;none&gt;        6379/TCP       3m22s
+</span></span><span class=line><span class=cl>redis-follower  ClusterIP   10.43.210.57   &lt;none&gt;        6379/TCP       2m22s
+</span></span><span class=line><span class=cl>frontend        NodePort    10.43.120.61   &lt;none&gt;        80:32494/TCP   2s
+</span></span></code></pre></td></tr></table></div></div><h2 id=test-our-application>Test our application</h2><p>Now we can test our application by using port-forwarding:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>kubectl port-forward svc/frontend 8080:80
+</span></span></code></pre></td></tr></table></div></div><p>If you use a remote server like me for K3D, you may want to add the address of the server with port-forwarding:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>kubectl port-forward svc/frontend 8080:80 --address 0.0.0.0 <span class=c1># or the ip of your server </span>
+</span></span></code></pre></td></tr></table></div></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>Forwarding from 0.0.0.0:8080 -&gt; <span class=m>80</span>
+</span></span><span class=line><span class=cl>Handling connection <span class=k>for</span> <span class=m>8080</span>
+</span></span><span class=line><span class=cl>Handling connection <span class=k>for</span> <span class=m>8080</span>
+</span></span></code></pre></td></tr></table></div></div><h2 id=scale-the-frontend>Scale the frontend</h2><h3 id=scale-up>Scale up</h3><p>The biggest advantage to use K8S is the capability of scaling.<br>We can use <code>kubectl scale deployment frontend --replicas=5</code> to scale the frontend.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>deployment.apps/frontend scaled
+</span></span></code></pre></td></tr></table></div></div><p>Then we check the pods to see if we have 5 replicas for our frontend <code>kubectl get pods -l tier=frontend</code></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>NAME                       READY   STATUS    RESTARTS   AGE
+</span></span><span class=line><span class=cl>frontend-f7d9c57d4-p9dm8   1/1     Running   <span class=m>0</span>          145m
+</span></span><span class=line><span class=cl>frontend-f7d9c57d4-vgk2v   1/1     Running   <span class=m>0</span>          145m
+</span></span><span class=line><span class=cl>frontend-f7d9c57d4-trqkm   1/1     Running   <span class=m>0</span>          145m
+</span></span><span class=line><span class=cl>frontend-f7d9c57d4-rxftf   1/1     Running   <span class=m>0</span>          68s
+</span></span><span class=line><span class=cl>frontend-f7d9c57d4-xhfw9   1/1     Running   <span class=m>0</span>          68s
+</span></span></code></pre></td></tr></table></div></div><p>Hooray!</p><h3 id=scale-down>Scale down</h3><p>Now let&rsquo;s give our poor little server a break by scale down the app <code>kubectl scale deployment frontend --replicas=2</code> and check the pods again <code>kubectl get pods -l tier=frontend</code></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>NAME                       READY   STATUS    RESTARTS   AGE
+</span></span><span class=line><span class=cl>frontend-f7d9c57d4-p9dm8   1/1     Running   <span class=m>0</span>          146m
+</span></span><span class=line><span class=cl>frontend-f7d9c57d4-vgk2v   1/1     Running   <span class=m>0</span>          146m
+</span></span></code></pre></td></tr></table></div></div><p>Now we can see that we have only two pods for frontend left.</p><h2 id=expose-the-service>Expose the service</h2><p>With K3D, we have two ways to expose the service: via ingress and via Nodeport.
+At the following part, I will show you how to expose the service in K3D.</p><h3 id=using-nodeport>Using NodePort</h3><p>The simplest way to expose the service is to use NodePort.
+If you don&rsquo;t have the port mapping for the K3D Loadbalancer, then you can add a port for it.
+Suppose that you don&rsquo;t have 8082 which is the port you want for your app. You can add the port mapping with</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>k3d cluster edit mycluster --port-add 8082:80@loadbalancer
+</span></span></code></pre></td></tr></table></div></div><p>Then you can simply change the frontend service with</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>kubectl edit svc frontend 
+</span></span></code></pre></td></tr></table></div></div><p>This gives you the config for your service</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span><span class=lnt>43
+</span><span class=lnt>44
+</span><span class=lnt>45
+</span><span class=lnt>46
+</span><span class=lnt>47
+</span><span class=lnt>48
+</span><span class=lnt>49
+</span><span class=lnt>50
+</span><span class=lnt>51
+</span><span class=lnt>52
+</span><span class=lnt>53
+</span><span class=lnt>54
+</span><span class=lnt>55
+</span><span class=lnt>56
+</span><span class=lnt>57
+</span><span class=lnt>58
+</span><span class=lnt>59
+</span><span class=lnt>60
+</span><span class=lnt>61
+</span><span class=lnt>62
+</span><span class=lnt>63
+</span><span class=lnt>64
+</span><span class=lnt>65
+</span><span class=lnt>66
+</span><span class=lnt>67
+</span><span class=lnt>68
+</span><span class=lnt>69
+</span><span class=lnt>70
+</span><span class=lnt>71
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl><span class=nt>apiVersion</span><span class=p>:</span><span class=w> </span><span class=l>v1</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>kind</span><span class=p>:</span><span class=w> </span><span class=l>Service</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>metadata</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>annotations</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>kubectl.kubernetes.io/last-applied-configuration</span><span class=p>:</span><span class=w> </span><span class=p>&gt;</span><span class=sd>
+</span></span></span><span class=line><span class=cl><span class=sd>      {&#34;apiVersion&#34;:&#34;v1&#34;,&#34;kind&#34;:&#34;Service&#34;,&#34;metadata&#34;:{&#34;annotations&#34;:{},&#34;labels&#34;:{&#34;app&#34;:&#34;guestbook&#34;,&#34;tier&#34;:&#34;frontend&#34;},&#34;name&#34;:&#34;frontend&#34;,&#34;namespace&#34;:&#34;guestbook&#34;},&#34;spec&#34;:{&#34;ports&#34;:[{&#34;port&#34;:80}],&#34;selector&#34;:{&#34;app&#34;:&#34;guestbook&#34;,&#34;tier&#34;:&#34;frontend&#34;},&#34;type&#34;:&#34;NodePort&#34;}}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>creationTimestamp</span><span class=p>:</span><span class=w> </span><span class=ld>2023-03-11T21:06:54Z</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>labels</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>app</span><span class=p>:</span><span class=w> </span><span class=l>guestbook</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>tier</span><span class=p>:</span><span class=w> </span><span class=l>frontend</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>managedFields</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=nt>apiVersion</span><span class=p>:</span><span class=w> </span><span class=l>v1</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>fieldsType</span><span class=p>:</span><span class=w> </span><span class=l>FieldsV1</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>fieldsV1</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>f:metadata</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>          </span><span class=nt>f:annotations</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=nt>.</span><span class=p>:</span><span class=w> </span>{}<span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=nt>f:kubectl.kubernetes.io/last-applied-configuration</span><span class=p>:</span><span class=w> </span>{}<span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>          </span><span class=nt>f:labels</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=nt>.</span><span class=p>:</span><span class=w> </span>{}<span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=nt>f:app</span><span class=p>:</span><span class=w> </span>{}<span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=nt>f:tier</span><span class=p>:</span><span class=w> </span>{}<span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>f:spec</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>          </span><span class=nt>f:externalTrafficPolicy</span><span class=p>:</span><span class=w> </span>{}<span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>          </span><span class=nt>f:internalTrafficPolicy</span><span class=p>:</span><span class=w> </span>{}<span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>          </span><span class=nt>f:ports</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=nt>.</span><span class=p>:</span><span class=w> </span>{}<span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=s2>&#34;k:{\&#34;port\&#34;:80,\&#34;protocol\&#34;:\&#34;TCP\&#34;}&#34;</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>              </span><span class=nt>.</span><span class=p>:</span><span class=w> </span>{}<span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>              </span><span class=nt>f:port</span><span class=p>:</span><span class=w> </span>{}<span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>              </span><span class=nt>f:protocol</span><span class=p>:</span><span class=w> </span>{}<span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>              </span><span class=nt>f:targetPort</span><span class=p>:</span><span class=w> </span>{}<span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>          </span><span class=nt>f:selector</span><span class=p>:</span><span class=w> </span>{}<span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>          </span><span class=nt>f:sessionAffinity</span><span class=p>:</span><span class=w> </span>{}<span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>manager</span><span class=p>:</span><span class=w> </span><span class=l>kubectl-client-side-apply</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>operation</span><span class=p>:</span><span class=w> </span><span class=l>Update</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>time</span><span class=p>:</span><span class=w> </span><span class=ld>2023-03-11T21:06:54Z</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=nt>apiVersion</span><span class=p>:</span><span class=w> </span><span class=l>v1</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>fieldsType</span><span class=p>:</span><span class=w> </span><span class=l>FieldsV1</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>fieldsV1</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>f:spec</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>          </span><span class=nt>f:ports</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=s2>&#34;k:{\&#34;port\&#34;:80,\&#34;protocol\&#34;:\&#34;TCP\&#34;}&#34;</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>              </span><span class=nt>f:nodePort</span><span class=p>:</span><span class=w> </span>{}<span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>          </span><span class=nt>f:type</span><span class=p>:</span><span class=w> </span>{}<span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>manager</span><span class=p>:</span><span class=w> </span><span class=l>Go-http-client</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>operation</span><span class=p>:</span><span class=w> </span><span class=l>Update</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>time</span><span class=p>:</span><span class=w> </span><span class=ld>2023-03-11T21:13:29Z</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>frontend</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>namespace</span><span class=p>:</span><span class=w> </span><span class=l>guestbook</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>resourceVersion</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;2542766&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>uid</span><span class=p>:</span><span class=w> </span><span class=l>b50c1161-08f1-4b00-b7b1-0df41ad160f9</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>spec</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>clusterIP</span><span class=p>:</span><span class=w> </span><span class=m>10.43.120.61</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>clusterIPs</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=m>10.43.120.61</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>internalTrafficPolicy</span><span class=p>:</span><span class=w> </span><span class=l>Cluster</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>ipFamilies</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=l>IPv4</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>ipFamilyPolicy</span><span class=p>:</span><span class=w> </span><span class=l>SingleStack</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>ports</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=nt>port</span><span class=p>:</span><span class=w> </span><span class=m>80</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>protocol</span><span class=p>:</span><span class=w> </span><span class=l>TCP</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>targetPort</span><span class=p>:</span><span class=w> </span><span class=m>80</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>selector</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>app</span><span class=p>:</span><span class=w> </span><span class=l>guestbook</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>tier</span><span class=p>:</span><span class=w> </span><span class=l>frontend</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>sessionAffinity</span><span class=p>:</span><span class=w> </span><span class=l>None</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>type</span><span class=p>:</span><span class=w> </span><span class=l>ClusterIP</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>status</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>loadBalancer</span><span class=p>:</span><span class=w> </span>{}<span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><p>Now you can edit it by changing the spec part to</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl><span class=nn>...</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>spec</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>clusterIP</span><span class=p>:</span><span class=w> </span><span class=m>10.43.120.61</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>clusterIPs</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=m>10.43.120.61</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>internalTrafficPolicy</span><span class=p>:</span><span class=w> </span><span class=l>Cluster</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>ipFamilies</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=l>IPv4</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>ipFamilyPolicy</span><span class=p>:</span><span class=w> </span><span class=l>SingleStack</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>ports</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=nt>nodePort</span><span class=p>:</span><span class=w> </span><span class=m>8082</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>port</span><span class=p>:</span><span class=w> </span><span class=m>80</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>protocol</span><span class=p>:</span><span class=w> </span><span class=l>TCP</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>targetPort</span><span class=p>:</span><span class=w> </span><span class=m>80</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>selector</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>app</span><span class=p>:</span><span class=w> </span><span class=l>guestbook</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>tier</span><span class=p>:</span><span class=w> </span><span class=l>frontend</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>sessionAffinity</span><span class=p>:</span><span class=w> </span><span class=l>None</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>type</span><span class=p>:</span><span class=w> </span><span class=l>NodePort</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>status</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>loadBalancer</span><span class=p>:</span><span class=w> </span>{}<span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><p>You just need to add <code>nodePort: 8082</code> and change the type from <code>ClusterIP</code> to <code>NodePort</code></p><p>Now you can try to access the service from the host of K3D with <code>http://host-ip:8082</code></p><h3 id=using-ingress>Using Ingress</h3><p>K3D&rsquo;s documentation recommands this way. I was a little bit confused at the beginning to get it work.<br>But it&rsquo;s as easy as the NodePort method.</p><p>For the service, you just need to keep it to ClusterIP type and give it a port mapping</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span><span class=lnt>43
+</span><span class=lnt>44
+</span><span class=lnt>45
+</span><span class=lnt>46
+</span><span class=lnt>47
+</span><span class=lnt>48
+</span><span class=lnt>49
+</span><span class=lnt>50
+</span><span class=lnt>51
+</span><span class=lnt>52
+</span><span class=lnt>53
+</span><span class=lnt>54
+</span><span class=lnt>55
+</span><span class=lnt>56
+</span><span class=lnt>57
+</span><span class=lnt>58
+</span><span class=lnt>59
+</span><span class=lnt>60
+</span><span class=lnt>61
+</span><span class=lnt>62
+</span><span class=lnt>63
+</span><span class=lnt>64
+</span><span class=lnt>65
+</span><span class=lnt>66
+</span><span class=lnt>67
+</span><span class=lnt>68
+</span><span class=lnt>69
+</span><span class=lnt>70
+</span><span class=lnt>71
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl><span class=nt>apiVersion</span><span class=p>:</span><span class=w> </span><span class=l>v1</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>kind</span><span class=p>:</span><span class=w> </span><span class=l>Service</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>metadata</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>annotations</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>kubectl.kubernetes.io/last-applied-configuration</span><span class=p>:</span><span class=w> </span><span class=p>&gt;</span><span class=sd>
+</span></span></span><span class=line><span class=cl><span class=sd>      {&#34;apiVersion&#34;:&#34;v1&#34;,&#34;kind&#34;:&#34;Service&#34;,&#34;metadata&#34;:{&#34;annotations&#34;:{},&#34;labels&#34;:{&#34;app&#34;:&#34;guestbook&#34;,&#34;tier&#34;:&#34;frontend&#34;},&#34;name&#34;:&#34;frontend&#34;,&#34;namespace&#34;:&#34;guestbook&#34;},&#34;spec&#34;:{&#34;ports&#34;:[{&#34;port&#34;:80}],&#34;selector&#34;:{&#34;app&#34;:&#34;guestbook&#34;,&#34;tier&#34;:&#34;frontend&#34;},&#34;type&#34;:&#34;NodePort&#34;}}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>creationTimestamp</span><span class=p>:</span><span class=w> </span><span class=ld>2023-03-11T21:06:54Z</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>labels</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>app</span><span class=p>:</span><span class=w> </span><span class=l>guestbook</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>tier</span><span class=p>:</span><span class=w> </span><span class=l>frontend</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>managedFields</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=nt>apiVersion</span><span class=p>:</span><span class=w> </span><span class=l>v1</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>fieldsType</span><span class=p>:</span><span class=w> </span><span class=l>FieldsV1</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>fieldsV1</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>f:metadata</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>          </span><span class=nt>f:annotations</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=nt>.</span><span class=p>:</span><span class=w> </span>{}<span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=nt>f:kubectl.kubernetes.io/last-applied-configuration</span><span class=p>:</span><span class=w> </span>{}<span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>          </span><span class=nt>f:labels</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=nt>.</span><span class=p>:</span><span class=w> </span>{}<span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=nt>f:app</span><span class=p>:</span><span class=w> </span>{}<span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=nt>f:tier</span><span class=p>:</span><span class=w> </span>{}<span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>f:spec</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>          </span><span class=nt>f:externalTrafficPolicy</span><span class=p>:</span><span class=w> </span>{}<span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>          </span><span class=nt>f:internalTrafficPolicy</span><span class=p>:</span><span class=w> </span>{}<span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>          </span><span class=nt>f:ports</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=nt>.</span><span class=p>:</span><span class=w> </span>{}<span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=s2>&#34;k:{\&#34;port\&#34;:80,\&#34;protocol\&#34;:\&#34;TCP\&#34;}&#34;</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>              </span><span class=nt>.</span><span class=p>:</span><span class=w> </span>{}<span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>              </span><span class=nt>f:port</span><span class=p>:</span><span class=w> </span>{}<span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>              </span><span class=nt>f:protocol</span><span class=p>:</span><span class=w> </span>{}<span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>              </span><span class=nt>f:targetPort</span><span class=p>:</span><span class=w> </span>{}<span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>          </span><span class=nt>f:selector</span><span class=p>:</span><span class=w> </span>{}<span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>          </span><span class=nt>f:sessionAffinity</span><span class=p>:</span><span class=w> </span>{}<span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>manager</span><span class=p>:</span><span class=w> </span><span class=l>kubectl-client-side-apply</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>operation</span><span class=p>:</span><span class=w> </span><span class=l>Update</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>time</span><span class=p>:</span><span class=w> </span><span class=ld>2023-03-11T21:06:54Z</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=nt>apiVersion</span><span class=p>:</span><span class=w> </span><span class=l>v1</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>fieldsType</span><span class=p>:</span><span class=w> </span><span class=l>FieldsV1</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>fieldsV1</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>f:spec</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>          </span><span class=nt>f:ports</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=s2>&#34;k:{\&#34;port\&#34;:80,\&#34;protocol\&#34;:\&#34;TCP\&#34;}&#34;</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>              </span><span class=nt>f:nodePort</span><span class=p>:</span><span class=w> </span>{}<span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>          </span><span class=nt>f:type</span><span class=p>:</span><span class=w> </span>{}<span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>manager</span><span class=p>:</span><span class=w> </span><span class=l>Go-http-client</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>operation</span><span class=p>:</span><span class=w> </span><span class=l>Update</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>time</span><span class=p>:</span><span class=w> </span><span class=ld>2023-03-11T21:13:29Z</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>frontend</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>namespace</span><span class=p>:</span><span class=w> </span><span class=l>guestbook</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>resourceVersion</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;2542766&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>uid</span><span class=p>:</span><span class=w> </span><span class=l>b50c1161-08f1-4b00-b7b1-0df41ad160f9</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>spec</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>clusterIP</span><span class=p>:</span><span class=w> </span><span class=m>10.43.120.61</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>clusterIPs</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=m>10.43.120.61</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>internalTrafficPolicy</span><span class=p>:</span><span class=w> </span><span class=l>Cluster</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>ipFamilies</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=l>IPv4</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>ipFamilyPolicy</span><span class=p>:</span><span class=w> </span><span class=l>SingleStack</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>ports</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=nt>port</span><span class=p>:</span><span class=w> </span><span class=m>80</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>protocol</span><span class=p>:</span><span class=w> </span><span class=l>TCP</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>targetPort</span><span class=p>:</span><span class=w> </span><span class=m>80</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>selector</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>app</span><span class=p>:</span><span class=w> </span><span class=l>guestbook</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>tier</span><span class=p>:</span><span class=w> </span><span class=l>frontend</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>sessionAffinity</span><span class=p>:</span><span class=w> </span><span class=l>None</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>type</span><span class=p>:</span><span class=w> </span><span class=l>ClusterIP</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>status</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>loadBalancer</span><span class=p>:</span><span class=w> </span>{}<span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><p>Then you can create an ingress to access the service with <code>guestbook-ingress.yaml</code></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl><span class=c># apiVersion: networking.k8s.io/v1beta1 # for k3s &lt; v1.19</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>apiVersion</span><span class=p>:</span><span class=w> </span><span class=l>networking.k8s.io/v1</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>kind</span><span class=p>:</span><span class=w> </span><span class=l>Ingress</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>metadata</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>nginx</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>annotations</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>ingress.kubernetes.io/ssl-redirect</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;false&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=nt>spec</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>rules</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span>- <span class=nt>http</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>paths</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=nt>path</span><span class=p>:</span><span class=w> </span><span class=l>/</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>pathType</span><span class=p>:</span><span class=w> </span><span class=l>Prefix</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>backend</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>          </span><span class=nt>service</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>guestbook</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=nt>port</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>              </span><span class=nt>number</span><span class=p>:</span><span class=w> </span><span class=m>8082</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><p>The most important part is to specify the app to <code>guestbook</code>. This is the <code>app</code> selector we defined for the frontend service.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl><span class=w>        </span><span class=nt>backend</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>          </span><span class=nt>service</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>guestbook</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=nt>port</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>              </span><span class=nt>number</span><span class=p>:</span><span class=w> </span><span class=m>8082</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><p>The port number here should be the external port to access the service, and we just tell the LoadBalancer to find the service named guestbook.</p><p>Then just type <code>kubectl apply -f guestbook-ingress.yaml</code> and you are fine to go with your deployment.</p><h2 id=clean-up>Clean up</h2><p>The simplest way to clean up is with the namespace</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>kubectl delete namespace guestbook
+</span></span></code></pre></td></tr></table></div></div><p>A more complicated way it&rsquo;s to purge the pods and the services</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>kubectl delete deployment -l <span class=nv>app</span><span class=o>=</span>redis
+</span></span><span class=line><span class=cl>kubectl delete service -l <span class=nv>app</span><span class=o>=</span>redis
+</span></span><span class=line><span class=cl>kubectl delete deployment frontend
+</span></span><span class=line><span class=cl>kubectl delete service frontend
+</span></span></code></pre></td></tr></table></div></div><p>And something like</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>deployment.apps <span class=s2>&#34;redis-follower&#34;</span> deleted
+</span></span><span class=line><span class=cl>deployment.apps <span class=s2>&#34;redis-leader&#34;</span> deleted
+</span></span><span class=line><span class=cl>deployment.apps <span class=s2>&#34;frontend&#34;</span> deleted
+</span></span><span class=line><span class=cl>service <span class=s2>&#34;frontend&#34;</span> deleted
+</span></span></code></pre></td></tr></table></div></div><p>will show up.</p><p>If you type <code>kubectl get pods</code>, you can see that you cleansed everything.</p><h2 id=references>References</h2><p><a class=link href=https://kubernetes.io/docs/tutorials/stateless-application/guestbook/ target=_blank rel=noopener>https://kubernetes.io/docs/tutorials/stateless-application/guestbook/</a>
+<a class=link href=https://k3d.io/v5.4.6/usage/exposing_services/ target=_blank rel=noopener>https://k3d.io/v5.4.6/usage/exposing_services/</a></p></section><footer class=article-footer><section class=article-tags><a href=/tags/k3d/>K3D</a>
+<a href=/tags/k8s/>K8S</a>
+<a href=/tags/kubernetes/>Kubernetes</a>
+<a href=/tags/docker/>Docker</a></section></footer></article><aside class=related-content--wrapper><h2 class=section-title>Related content</h2><div class=related-content><div class="flex article-list--tile"><article><a href=/p/k8s-setup-k3d/><div class=article-details><h2 class=article-title>[K8S] Setup K3D</h2></div></a></article><article><a href=/p/k8s-setup-minio-s3-storage-in-k3s/><div class=article-details><h2 class=article-title>[K8S] Setup Minio S3 Storage in K3S</h2></div></a></article><article><a href=/p/k8s-use-metallb-as-k3s-load-balancer/><div class=article-details><h2 class=article-title>[K8S] Use MetalLB as K3S Load Balancer</h2></div></a></article></div></div></aside><div class=disqus-container><div id=disqus_thread></div><script>window.disqus_config=function(){},function(){if(["localhost","127.0.0.1"].indexOf(window.location.hostname)!=-1){document.getElementById("disqus_thread").innerHTML="Disqus comments not available by default when the website is previewed locally.";return}var t=document,e=t.createElement("script");e.async=!0,e.src="//hugo-theme-stack.disqus.com/embed.js",e.setAttribute("data-timestamp",+new Date),(t.head||t.body).appendChild(e)}()</script><noscript>Please enable JavaScript to view the <a href=https://disqus.com/?ref_noscript>comments powered by Disqus.</a></noscript><a href=https://disqus.com class=dsq-brlink>comments powered by <span class=logo-disqus>Disqus</span></a></div><style>.disqus-container{background-color:var(--card-background);border-radius:var(--card-border-radius);box-shadow:var(--shadow-l1);padding:var(--card-padding)}</style><script>window.addEventListener("onColorSchemeChange",e=>{typeof DISQUS=="object"&&DISQUS.reset({reload:!0})})</script><footer class=site-footer><section class=copyright>&copy;
+2023 -
+2025 Haoxian's Blog</section><section class=powerby>Built with <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a><br>Theme <b><a href=https://github.com/CaiJimmy/hugo-theme-stack target=_blank rel=noopener data-version=3.33.0>Stack</a></b> designed by <a href=https://jimmycai.com target=_blank rel=noopener>Jimmy</a></section></footer><div class=pswp tabindex=-1 role=dialog aria-hidden=true><div class=pswp__bg></div><div class=pswp__scroll-wrap><div class=pswp__container><div class=pswp__item></div><div class=pswp__item></div><div class=pswp__item></div></div><div class="pswp__ui pswp__ui--hidden"><div class=pswp__top-bar><div class=pswp__counter></div><button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+<button class="pswp__button pswp__button--share" title=Share></button>
+<button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+<button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button><div class=pswp__preloader><div class=pswp__preloader__icn><div class=pswp__preloader__cut><div class=pswp__preloader__donut></div></div></div></div></div><div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap"><div class=pswp__share-tooltip></div></div><button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+</button>
+<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)"></button><div class=pswp__caption><div class=pswp__caption__center></div></div></div></div></div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css crossorigin=anonymous></main></div><script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z+KMkF24hUW8WePSA9HM=" crossorigin=anonymous></script><script type=text/javascript src=/ts/main.c922af694cc257bf1ecc41c0dd7b0430f9114ec280ccf67cd2c6ad55f5316c4e.js defer></script><script>(function(){const e=document.createElement("link");e.href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap",e.type="text/css",e.rel="stylesheet",document.head.appendChild(e)})()</script></body></html>
